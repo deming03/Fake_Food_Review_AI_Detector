@@ -2,9 +2,10 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar, Platform, Linking } from 'react-native';
+import Toast from 'react-native-toast-message';
 
-import HomeScreen from './src/screens/HomeScreen';
-import AnalysisScreen from './src/screens/AnalysisScreen';
+import HomeScreen from './src/screens/EnhancedHomeScreen';
+import AnalysisScreen from './src/screens/EnhancedAnalysisScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
 import { RootStackParamList } from './src/types';
@@ -12,7 +13,85 @@ import { RootStackParamList } from './src/types';
 const Stack = createStackNavigator<RootStackParamList>();
 
 // URL configuration for deep linking
-const prefix = 'fakefooddetector://';
+  const prefix = 'truthbite://';
+
+/**
+ * Validate if a URL is from Google Maps
+ */
+const isValidGoogleMapsURL = (url: string): boolean => {
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.toLowerCase();
+    
+    // Common Google Maps domains
+    const validDomains = [
+      'maps.google.com',
+      'www.google.com',
+      'google.com',
+      'maps.app.goo.gl',
+      'goo.gl'
+    ];
+    
+    // Check if hostname matches any valid Google Maps domain
+    const isValidDomain = validDomains.some(domain => 
+      hostname === domain || hostname.endsWith('.' + domain)
+    );
+    
+    // Additional check for Google Maps specific paths and parameters
+    const path = urlObj.pathname.toLowerCase();
+    const search = urlObj.search.toLowerCase();
+    
+    // Block only truly generic links, but allow restaurant-specific ones
+    if (hostname.includes('share.google')) {
+      // Allow share.google links as they often redirect to Maps
+      console.log('Allowing share.google link (likely Maps redirect)');
+      return true;
+    }
+    
+    if (hostname.includes('google.com') && path.includes('/search')) {
+      // Allow ALL search URLs with any query parameter
+      const hasPlaceId = search.includes('place_id') || 
+                        url.includes('#vhid=') || 
+                        url.includes('#place/') ||
+                        search.includes('ludocid=');
+      
+      // Allow any search with q parameter (any restaurant/food search)
+      const queryParam = urlObj.searchParams.get('q');
+      const hasAnyQuery = queryParam && queryParam.trim().length > 0;
+      
+      if (hasPlaceId || hasAnyQuery) {
+        console.log('Allowing search URL:', hasPlaceId ? 'has place ID' : 'has search query');
+        return true;
+      } else {
+        console.log('Blocking search URL without any query');
+        return false;
+      }
+    }
+    
+    // Check for valid Google Maps paths
+    const isGoogleMapsPath = 
+      (hostname.includes('maps.google.com')) ||
+      (hostname.includes('google.com') && path.includes('/maps/place/')) ||
+      (hostname.includes('google.com') && path.includes('/maps') && search.includes('place_id')) ||
+      (hostname.includes('goo.gl') && (path.includes('maps') || path.length > 5)) ||
+      (hostname.includes('maps.app.goo.gl'));
+    
+    console.log('URL validation:', {
+      url,
+      hostname,
+      path,
+      isValidDomain,
+      isGoogleMapsPath,
+      result: isValidDomain && isGoogleMapsPath
+    });
+    
+    return isValidDomain && isGoogleMapsPath;
+    
+  } catch (error) {
+    console.error('Error validating URL:', error);
+    return false;
+  }
+};
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -54,8 +133,17 @@ const App: React.FC = () => {
           const urlParams = new URLSearchParams(urlParts[1]);
           const googleMapsUrl = urlParams.get('url');
           if (googleMapsUrl) {
-            console.log('Google Maps URL from shortcut:', googleMapsUrl);
-            alert(`🎉 SHORTCUT SUCCESS!\n\nReceived restaurant URL:\n${googleMapsUrl}`);
+            console.log('Received URL from shortcut:', googleMapsUrl);
+            
+            // Validate if it's actually a Google Maps URL
+            if (isValidGoogleMapsURL(googleMapsUrl)) {
+              console.log('✅ Valid Google Maps URL detected');
+              alert(`🎉 VALID RESTAURANT LINK!\n\nGoogle Maps URL received:\n${googleMapsUrl}\n\n🤖 Ready for AI analysis!`);
+              // TODO: Navigate to analysis screen with this URL
+            } else {
+              console.log('❌ Not a Google Maps URL');
+              alert(`❌ INVALID LINK\n\nThis app only analyzes Google Maps restaurant links.\n\nReceived: ${googleMapsUrl}\n\nPlease share a Google Maps restaurant page instead.`);
+            }
           } else {
             console.log('Shortcut worked but no URL parameter');
             alert('🎉 iOS Shortcut Works!\n\nApp opened successfully via automation!\n\n(No URL parameter - check shortcut config)');
@@ -81,7 +169,7 @@ const App: React.FC = () => {
   }, []);
 
   const linking = {
-    prefixes: [prefix, 'fakefooddetector://'],
+    prefixes: [prefix, 'truthbite://'],
     config: {
       screens: {
         Home: '',
@@ -122,7 +210,7 @@ const App: React.FC = () => {
           name="Home" 
           component={HomeScreen}
           options={{
-            title: 'Fake Review Detector',
+            title: 'TRUTH BITE',
             headerStyle: {
               backgroundColor: '#FF6B35',
             },
@@ -137,7 +225,7 @@ const App: React.FC = () => {
           name="Analysis" 
           component={AnalysisScreen}
           options={{
-            title: 'Analyzing',
+            title: 'Revealing Truth...',
             headerLeft: () => null, // Prevent user from going back during analysis
           }}
         />
@@ -145,7 +233,7 @@ const App: React.FC = () => {
           name="Results" 
           component={ResultsScreen}
           options={{
-            title: 'Analysis Results',
+            title: 'Truth Report',
             headerLeft: () => null, // Prevent user from accidentally returning to analysis page
           }}
         />
@@ -153,10 +241,11 @@ const App: React.FC = () => {
           name="History" 
           component={HistoryScreen}
           options={{
-            title: 'History',
+            title: 'Analysis History',
           }}
         />
       </Stack.Navigator>
+      <Toast />
     </NavigationContainer>
   );
 };

@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "Fake Food Detector",
-    "slug": "fake-food-detector",
+    "name": "TRUTH BITE",
+    "slug": "truth-bite",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logodesign.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/logodesign.png",
       "resizeMode": "contain",
       "backgroundColor": "#FF6B35"
     },
@@ -16,25 +16,25 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.fakefooddetector.app",
+      "bundleIdentifier": "com.truthbite.app",
       "associatedDomains": [
         "applinks:fakefooddetector.app"
       ],
       "infoPlist": {
         "CFBundleURLTypes": [
           {
-            "CFBundleURLName": "fake-food-detector",
-            "CFBundleURLSchemes": ["fakefooddetector"]
+            "CFBundleURLName": "truth-bite",
+            "CFBundleURLSchemes": ["truthbite"]
           }
         ]
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logodesign.png",
         "backgroundColor": "#FF6B35"
       },
-      "package": "com.fakefooddetector.app",
+      "package": "com.truthbite.app",
       "intentFilters": [
         {
           "action": "VIEW",
@@ -42,10 +42,10 @@
           "data": [
             {
               "scheme": "https",
-              "host": "fakefooddetector.app"
+              "host": "truthbite.app"
             },
             {
-              "scheme": "fakefooddetector"
+              "scheme": "truthbite"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
@@ -53,8 +53,8 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/logodesign.png"
     },
-    "scheme": "fakefooddetector"
+    "scheme": "truthbite"
   }
 }

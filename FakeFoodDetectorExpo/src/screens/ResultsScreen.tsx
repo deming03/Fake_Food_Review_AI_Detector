@@ -21,11 +21,19 @@ const ResultsScreen: React.FC = () => {
   const { analysisResult } = route.params;
 
   const handleGoHome = () => {
-    navigation.navigate('Home');
+    // Reset to Home screen to clear the navigation stack
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
   };
 
   const handleViewHistory = () => {
-    navigation.navigate('History');
+    // Reset to History screen to clear the navigation stack
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'History' }],
+    });
   };
 
   const renderReview = (review: Review, index: number) => (
@@ -64,14 +72,14 @@ const ResultsScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>🎯 Analysis Results</Text>
-        <Text style={styles.subtitle}>AI Review Authenticity Report</Text>
+        <Text style={styles.title}>🍽️ TRUTH BITE Report</Text>
+        <Text style={styles.subtitle}>Restaurant Review Authenticity Analysis</Text>
       </View>
 
       {/* Credibility Score Card */}
       <View style={styles.scoreCard}>
         <View style={styles.scoreHeader}>
-          <Text style={styles.scoreTitle}>Credibility Score</Text>
+          <Text style={styles.scoreTitle}>Truth Score</Text>
           <Text
             style={[
               styles.score,
@@ -151,7 +159,7 @@ const ResultsScreen: React.FC = () => {
       {/* Action Buttons */}
       <View style={styles.actionsContainer}>
         <TouchableOpacity style={styles.primaryButton} onPress={handleGoHome}>
-          <Text style={styles.primaryButtonText}>🏠 Analyze Another Restaurant</Text>
+          <Text style={styles.primaryButtonText}>🔍 Analyze Another Restaurant</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.secondaryButton} onPress={handleViewHistory}>
           <Text style={styles.secondaryButtonText}>📊 View History</Text>
@@ -163,7 +171,7 @@ const ResultsScreen: React.FC = () => {
           Analysis completed on {formatDate(analysisResult.analysisDate)}
         </Text>
         <Text style={styles.footerText}>
-          Powered by AI • Fake Food Review Detector
+          Powered by TRUTH BITE AI • Protecting Diners Since 2024
         </Text>
       </View>
     </ScrollView>

@@ -20,8 +20,15 @@ export const parseGoogleMapsUrl = (url: string): { isValid: boolean; restaurant?
     return { isValid: false };
   }
 
-  // 检查是否为Google Maps URL
-  if (!url.includes('maps.google') && !url.includes('goo.gl') && !url.includes('maps.app.goo.gl')) {
+  // 检查是否为Google Maps、Google Share URL或Google Search URL
+  const isGoogleMapsUrl = url.includes('maps.google') || 
+                         url.includes('goo.gl') || 
+                         url.includes('maps.app.goo.gl') ||
+                         url.includes('share.google') ||
+                         (url.includes('google.com') && (url.includes('/maps') || url.includes('#vhid=') || url.includes('place_id='))) ||
+                         (url.includes('google.com/search?q='));
+  
+  if (!isGoogleMapsUrl) {
     return { isValid: false };
   }
 
@@ -31,16 +38,32 @@ export const parseGoogleMapsUrl = (url: string): { isValid: boolean; restaurant?
     // 尝试从URL中提取餐厅名称
     let restaurantName = 'Unknown Restaurant';
     
-    // 方法1: 从路径中提取
-    const pathMatch = urlObj.pathname.match(/\/place\/([^\/]+)/);
-    if (pathMatch) {
-      restaurantName = decodeURIComponent(pathMatch[1].replace(/\+/g, ' '));
+    // Handle share.google URLs (they redirect, so no name in URL)
+    if (url.includes('share.google')) {
+      restaurantName = 'Restaurant (from Google Share link)';
     }
-    
-    // 方法2: 从查询参数中提取
-    const queryParam = urlObj.searchParams.get('query');
-    if (queryParam) {
-      restaurantName = queryParam;
+    // Handle Google search URLs with place IDs OR restaurant names
+    else if (url.includes('google.com/search')) {
+      // Try to extract from search query
+      const queryParam = urlObj.searchParams.get('q');
+      if (queryParam) {
+        restaurantName = decodeURIComponent(queryParam.replace(/\+/g, ' '));
+      } else {
+        restaurantName = 'Restaurant (from Google Search)';
+      }
+    }
+    // 方法1: 从路径中提取 (traditional Maps URLs)
+    else {
+      const pathMatch = urlObj.pathname.match(/\/place\/([^\/]+)/);
+      if (pathMatch) {
+        restaurantName = decodeURIComponent(pathMatch[1].replace(/\+/g, ' '));
+      }
+      
+      // 方法2: 从查询参数中提取
+      const queryParam = urlObj.searchParams.get('query') || urlObj.searchParams.get('q');
+      if (queryParam) {
+        restaurantName = queryParam;
+      }
     }
 
     return {

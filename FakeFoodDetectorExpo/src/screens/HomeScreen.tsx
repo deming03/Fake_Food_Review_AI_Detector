@@ -3,16 +3,28 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
-  TouchableOpacity,
   Alert,
   ScrollView,
   Linking,
+  Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import * as Animatable from 'react-native-animatable';
+import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../types';
 import { parseGoogleMapsUrl, isValidUrl } from '../utils/helpers';
+import { 
+  AnimatedButton, 
+  EnhancedTextInput, 
+  ModernCard, 
+  StatusBadge, 
+  Colors,
+  showToast
+} from '../components/EnhancedUI';
+import { RefreshableScrollView } from '../components/InteractiveComponents';
+
+const { width } = Dimensions.get('window');
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -23,22 +35,24 @@ const HomeScreen: React.FC = () => {
 
   const handleAnalyze = async () => {
     if (!restaurantUrl.trim()) {
-      Alert.alert('Error', 'Please enter a Google Maps restaurant link');
+      showToast.error('Please enter a Google Maps restaurant link');
       return;
     }
 
     if (!isValidUrl(restaurantUrl)) {
-      Alert.alert('Error', 'Please enter a valid URL link');
+      showToast.error('Please enter a valid URL link');
       return;
     }
 
     const parseResult = parseGoogleMapsUrl(restaurantUrl);
     if (!parseResult.isValid) {
-      Alert.alert('Error', 'Please enter a valid Google Maps restaurant link');
+      showToast.error('Please enter a valid Google Maps restaurant link');
       return;
     }
 
     setIsLoading(true);
+    showToast.info('Starting AI analysis...');
+    
     try {
       // Navigate to analysis page
       navigation.navigate('Analysis', { restaurantUrl });
