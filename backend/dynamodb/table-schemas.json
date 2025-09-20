@@ -1,0 +1,128 @@
+{
+  "tables": [
+    {
+      "TableName": "fake-food-detector-restaurants",
+      "KeySchema": [
+        {
+          "AttributeName": "restaurant_id",
+          "KeyType": "HASH"
+        }
+      ],
+      "AttributeDefinitions": [
+        {
+          "AttributeName": "restaurant_id",
+          "AttributeType": "S"
+        }
+      ],
+      "BillingMode": "PAY_PER_REQUEST",
+      "Tags": [
+        {
+          "Key": "Project",
+          "Value": "FakeFoodDetector"
+        },
+        {
+          "Key": "Environment",
+          "Value": "development"
+        }
+      ]
+    },
+    {
+      "TableName": "fake-food-detector-reviews",
+      "KeySchema": [
+        {
+          "AttributeName": "review_id",
+          "KeyType": "HASH"
+        }
+      ],
+      "AttributeDefinitions": [
+        {
+          "AttributeName": "review_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "restaurant_id",
+          "AttributeType": "S"
+        }
+      ],
+      "GlobalSecondaryIndexes": [
+        {
+          "IndexName": "restaurant-id-index",
+          "KeySchema": [
+            {
+              "AttributeName": "restaurant_id",
+              "KeyType": "HASH"
+            }
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          },
+          "BillingMode": "PAY_PER_REQUEST"
+        }
+      ],
+      "BillingMode": "PAY_PER_REQUEST",
+      "Tags": [
+        {
+          "Key": "Project",
+          "Value": "FakeFoodDetector"
+        },
+        {
+          "Key": "Environment",
+          "Value": "development"
+        }
+      ]
+    },
+    {
+      "TableName": "fake-food-detector-analysis-results",
+      "KeySchema": [
+        {
+          "AttributeName": "analysis_id",
+          "KeyType": "HASH"
+        }
+      ],
+      "AttributeDefinitions": [
+        {
+          "AttributeName": "analysis_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "restaurant_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "created_at",
+          "AttributeType": "S"
+        }
+      ],
+      "GlobalSecondaryIndexes": [
+        {
+          "IndexName": "restaurant-id-index",
+          "KeySchema": [
+            {
+              "AttributeName": "restaurant_id",
+              "KeyType": "HASH"
+            },
+            {
+              "AttributeName": "created_at",
+              "KeyType": "RANGE"
+            }
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          },
+          "BillingMode": "PAY_PER_REQUEST"
+        }
+      ],
+      "BillingMode": "PAY_PER_REQUEST",
+      "Tags": [
+        {
+          "Key": "Project",
+          "Value": "FakeFoodDetector"
+        },
+        {
+          "Key": "Environment",
+          "Value": "development"
+        }
+      ]
+    }
+  ]
+}

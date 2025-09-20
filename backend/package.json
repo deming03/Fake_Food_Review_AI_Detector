@@ -1,0 +1,11 @@
+{
+  "name": "fake-food-detector-backend",
+  "version": "1.0.0",
+  "description": "Backend scripts for Fake Food Detector",
+  "scripts": {
+    "create-tables": "node scripts/create-dynamodb-tables.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1692.0"
+  }
+}
