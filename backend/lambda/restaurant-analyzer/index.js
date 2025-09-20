@@ -219,67 +219,165 @@ async function scrapeReviews(googleMapsUrl) {
 }
 
 /**
- * 使用AI分析评论真实性
+ * 使用Amazon Bedrock AI分析评论真实性
  */
 async function analyzeReviews(reviews, restaurantId) {
-    // 为演示目的，使用基于规则的分析
-    // 在实际部署中会调用Amazon Bedrock
+    console.log('Starting AI analysis with Bedrock for', reviews.length, 'reviews');
     
     const fakeReviews = [];
     const fakeScores = {};
     const suspiciousPatterns = [];
     
-    reviews.forEach(review => {
-        let fakeScore = 0;
+    try {
+        // Prepare reviews for AI analysis
+        const reviewsText = reviews.map(r => `Review ${r.id}: ${r.text} (Rating: ${r.rating})`).join('\n');
         
-        // 简单的虚假检测规则
-        const text = review.text.toLowerCase();
+        // Amazon Bedrock AI Analysis
+        const aiAnalysis = await callBedrockAI(reviewsText);
         
-        // 1. 过于简单的评论
-        if (review.text.length < 20) {
-            fakeScore += 0.3;
-            suspiciousPatterns.push('发现过于简单的评论');
+        // Process AI results
+        if (aiAnalysis && aiAnalysis.fakeReviews) {
+            aiAnalysis.fakeReviews.forEach(fakeReview => {
+                fakeReviews.push(fakeReview.id);
+                fakeScores[fakeReview.id] = fakeReview.score;
+            });
+            
+            if (aiAnalysis.patterns) {
+                suspiciousPatterns.push(...aiAnalysis.patterns);
+            }
         }
+    } catch (error) {
+        console.error('Bedrock AI analysis failed, falling back to rule-based:', error);
         
-        // 2. 过度使用感叹号
-        const exclamationCount = (review.text.match(/！|!/g) || []).length;
-        if (exclamationCount > 3) {
-            fakeScore += 0.4;
-            suspiciousPatterns.push('发现过度使用感叹号的评论');
-        }
-        
-        // 3. 重复词汇
-        if (text.includes('好吃') && text.includes('推荐') && text.includes('棒')) {
-            fakeScore += 0.2;
-        }
-        
-        // 4. 5星评论但缺乏具体细节
-        if (review.rating === 5 && review.text.length < 30) {
-            fakeScore += 0.3;
-            suspiciousPatterns.push('发现高评分但缺乏细节的评论');
-        }
-        
-        fakeScores[review.id] = Math.min(fakeScore, 1.0);
-        
-        if (fakeScore > 0.6) {
-            fakeReviews.push(review.id);
-        }
-    });
+        // Fallback to enhanced rule-based analysis
+        reviews.forEach(review => {
+            let fakeScore = 0;
+            const text = review.text.toLowerCase();
+            
+            // Enhanced detection rules
+            if (review.text.length < 20) {
+                fakeScore += 0.3;
+                suspiciousPatterns.push('Detected overly simple reviews');
+            }
+            
+            const exclamationCount = (review.text.match(/！|!/g) || []).length;
+            if (exclamationCount > 3) {
+                fakeScore += 0.4;
+                suspiciousPatterns.push('Found reviews with excessive exclamation marks');
+            }
+            
+            // Generic promotional language detection
+            const promoWords = ['best', 'amazing', 'perfect', 'must try', 'definitely', 'absolutely'];
+            const promoCount = promoWords.filter(word => text.includes(word)).length;
+            if (promoCount > 2) {
+                fakeScore += 0.3;
+                suspiciousPatterns.push('Identified potential promotional language');
+            }
+            
+            // Short high-rating reviews
+            if (review.rating === 5 && review.text.length < 30) {
+                fakeScore += 0.3;
+                suspiciousPatterns.push('Found high ratings with insufficient details');
+            }
+            
+            // Repetitive patterns
+            if (text.includes('good') && text.includes('recommend') && text.includes('great')) {
+                fakeScore += 0.2;
+                suspiciousPatterns.push('Detected repetitive promotional patterns');
+            }
+            
+            fakeScores[review.id] = Math.min(fakeScore, 1.0);
+            
+            if (fakeScore > 0.6) {
+                fakeReviews.push(review.id);
+            }
+        });
+    }
     
-    // 去重可疑模式
+    // Remove duplicate patterns
     const uniquePatterns = [...new Set(suspiciousPatterns)];
     
-    // 计算总体可信度
+    // Calculate overall credibility
     const totalReviews = reviews.length;
     const fakeCount = fakeReviews.length;
     const credibilityScore = Math.round((1 - (fakeCount / totalReviews)) * 100);
     
+    console.log(`Analysis complete: ${fakeCount}/${totalReviews} fake reviews detected, credibility: ${credibilityScore}%`);
+    
     return {
-        credibilityScore: Math.max(credibilityScore, 30), // 最低30分
+        credibilityScore: Math.max(credibilityScore, 30),
         fakeReviews,
         fakeScores,
         suspiciousPatterns: uniquePatterns
     };
+}
+
+/**
+ * 调用Amazon Bedrock AI进行分析
+ */
+async function callBedrockAI(reviewsText) {
+    try {
+        const prompt = `
+You are an expert at detecting fake restaurant reviews. Analyze the following reviews and identify which ones are likely fake.
+
+Reviews to analyze:
+${reviewsText}
+
+Please respond with a JSON object containing:
+1. "fakeReviews": array of objects with "id" and "score" (0-1) for detected fake reviews
+2. "patterns": array of strings describing suspicious patterns found
+3. "reasoning": brief explanation of your analysis
+
+Focus on detecting:
+- Overly promotional language
+- Lack of specific details
+- Unnatural writing patterns
+- Extreme positive sentiment without substance
+- Reviews that seem bot-generated
+
+Response format:
+{
+  "fakeReviews": [{"id": "review_1", "score": 0.8}],
+  "patterns": ["Excessive promotional language", "Lack of specific details"],
+  "reasoning": "Analysis explanation"
+}`;
+
+        const params = {
+            modelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
+            contentType: 'application/json',
+            accept: 'application/json',
+            body: JSON.stringify({
+                anthropic_version: 'bedrock-2023-05-31',
+                max_tokens: 2000,
+                messages: [
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ]
+            })
+        };
+
+        const command = {
+            ...params,
+            body: params.body
+        };
+
+        const response = await bedrock.invokeModel(command).promise();
+        const responseBody = JSON.parse(Buffer.from(response.body).toString());
+        
+        if (responseBody.content && responseBody.content[0]) {
+            const aiResponse = JSON.parse(responseBody.content[0].text);
+            console.log('Bedrock AI analysis successful:', aiResponse.reasoning);
+            return aiResponse;
+        }
+        
+        throw new Error('Invalid Bedrock response format');
+        
+    } catch (error) {
+        console.error('Bedrock AI call failed:', error.message);
+        throw error;
+    }
 }
 
 /**

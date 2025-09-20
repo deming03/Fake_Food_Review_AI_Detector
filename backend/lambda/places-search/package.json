@@ -1,0 +1,23 @@
+{
+  "name": "places-search-lambda",
+  "version": "1.0.0",
+  "description": "Google Places API restaurant search Lambda function",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1692.0",
+    "axios": "^1.6.0"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "google",
+    "places",
+    "restaurant",
+    "search"
+  ],
+  "author": "Fake Food Detector",
+  "license": "MIT"
+}

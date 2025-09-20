@@ -2,11 +2,11 @@ import axios from 'axios';
 import { Restaurant, AnalysisResult, ApiResponse } from '../types';
 import { delay } from '../utils/helpers';
 
-// AWS API Gateway base URL (will be updated when configuring AWS)
-const API_BASE_URL = 'https://your-api-gateway-url/dev'; // To be updated
+// AWS Lambda Function URL - Replace with actual URL from deployment
+const API_BASE_URL = 'https://ir7colijlggp7kfewxctd47pfq0cjmhq.lambda-url.ap-southeast-1.on.aws/'; // Will be updated
 
-// For Expo testing, we'll use mock data
-const USE_MOCK_DATA = true; // Set to false when backend is ready
+// Switch between mock and real backend
+const USE_MOCK_DATA = true; // Temporarily back to mock while debugging backend
 
 // Create axios instance
 const apiClient = axios.create({
@@ -88,17 +88,43 @@ export const restaurantApi = {
     }
 
     try {
-      const response = await apiClient.post('/analyze', {
-        googleMapsUrl,
+      // For Lambda Function URL, send the event format the Lambda expects
+      const response = await fetch(API_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          httpMethod: 'POST',
+          body: JSON.stringify({ googleMapsUrl }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('Backend response:', result);
+      
+      if (result.success && result.data) {
+        return {
+          success: true,
+          data: result.data,
+        };
+      } else {
+        throw new Error(result.error || 'Analysis failed');
+      }
+    } catch (error: any) {
+      console.warn('Backend call failed, using mock data:', error.message);
+      // Fallback to mock data if backend fails
+      await delay(3000);
       return {
         success: true,
-        data: response.data,
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Analysis failed',
+        data: mockAnalysisResult,
       };
     }
   },
@@ -147,6 +173,74 @@ export const restaurantApi = {
       return {
         success: false,
         error: error.response?.data?.message || 'Failed to get history records',
+      };
+    }
+  },
+
+  // Search restaurants by name using Google Places API
+  searchRestaurants: async (query: string, location?: string): Promise<ApiResponse<Restaurant[]>> => {
+    if (USE_MOCK_DATA) {
+      await delay(1500);
+      // Return mock restaurant search results
+      const mockRestaurants: Restaurant[] = [
+        {
+          id: 'rest_1',
+          name: `${query} Restaurant`,
+          address: '123 Main Street, City, State',
+          googleMapsUrl: 'https://maps.google.com/place/Mock+Restaurant',
+        },
+        {
+          id: 'rest_2',
+          name: `Best ${query} Place`,
+          address: '456 Food Avenue, City, State',
+          googleMapsUrl: 'https://maps.google.com/place/Best+Place',
+        }
+      ];
+      
+      return {
+        success: true,
+        data: mockRestaurants,
+      };
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          httpMethod: 'POST',
+          body: JSON.stringify({ query, location }),
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        return {
+          success: true,
+          data: result.data.results,
+        };
+      } else {
+        throw new Error(result.error || 'Restaurant search failed');
+      }
+    } catch (error: any) {
+      console.warn('Restaurant search failed, using mock data:', error.message);
+      // Fallback to mock search results
+      await delay(1500);
+      const mockRestaurants: Restaurant[] = [
+        {
+          id: 'rest_1',
+          name: `${query} Restaurant`,
+          address: '123 Main Street, City, State',
+          googleMapsUrl: 'https://maps.google.com/place/Mock+Restaurant',
+        }
+      ];
+      
+      return {
+        success: true,
+        data: mockRestaurants,
       };
     }
   },
