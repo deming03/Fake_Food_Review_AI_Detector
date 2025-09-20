@@ -1,0 +1,101 @@
+Sandbox on AWS
+
+Account access details
+Account ID
+037708943520
+Account email address
+awshackathon+isb-sandbox-091@axrail.com
+
+Select a role:
+awsisb_IsbUsersPS|Access keys 
+
+Get credentials for awsisb_IsbUsersPS
+
+Create access for the account Innovation Sandbox - Account 091 (037708943520) with awsisb_IsbUsersPS.
+Use any of the following options to access AWS resources programmatically or from the AWS CLI. You can retrieve credentials as often as needed.
+
+
+Windows
+
+AWS IAM Identity Center credentials (Recommended)
+To extend the duration of your credentials, we recommend you configure the AWS CLI to retrieve them automatically using the aws configure sso  command. Learn more 
+SSO start URL
+
+https://d-9667b4c0ef.awsapps.com/start/#
+
+SSO Region
+
+ap-southeast-1
+
+Option 1: Set AWS environment variables
+Paste the following text in the command prompt to set the AWS environment variables. Learn more 
+SET AWS_ACCESS_KEY_ID=ASIAQRR5A2CQBNZQGMRY
+SET AWS_SECRET_ACCESS_KEY=Bif9K1g1KSB2UqaLODcgbZjTsnWkEwdd20t9iZXb
+SET AWS_SESSION_TOKEN=IQoJb3JpZ2luX2VjEGsaDmFwLXNvdXRoZWFzdC0xIkgwRgIhALI6GHFqXqHRiGYV41V7OMcxliUzdHb+Jtgl+/pfDTpHAiEArwWSIvSeibdTF2O/j56LdVUpVjFjv+kKbD9+D/3ZZfoqlwMI5P//////////ARAAGgwwMzc3MDg5NDM1MjAiDOV2dD6VmGkmbkLWvyrrAra/Un7XX4zf1BFJQrF0ggDGAiJj+fwVq7+Iv+kgvrk/ryvUKyEkP7l/LhLEZ6v1vBlK71I17xwMjcH4ZI81uv+P2/KiDlIIzHvHq9t0gZ72vk+Wpre1TfUF0k7QAwVkuYbXyI02V4k//UeGTnyGKkbto1hX+jWDhJFAM1e6OC/BtUAw+LI9JyHIpEatO0tvMtnrlUSdhY6ULKO/U8s37M9Fca9rfZSAmzH3BFaQDfBcjsq4GkOwuO0eMZzB6IBLzUkxI1Qi16a+IEfp9qK1hT4NPOHDKUzYdNVOFPqWZJzpO6P7GfbojwG3rkBYgMc/fRV8Ep1EWI7cmNFtwjxZ9Lqpvq402f5JUlm/s9BCf5kFxkQzrUR1Nd8G8TY08o504FZpauvL57ezGavDXcDauZUG+cFuJaaASAugPxpDcMO0S2hlf41pNd1hCyQzXDe55oQHUYvqKKAOAV8OeeoPJ/1NpLWUnOunRPc4NjDur7jGBjqlAWgFMLgUE3yZlaO3rfjEdI2DrSbI6r7yKpz3hXqtR81MN7kFgjMhRZGAVWr+8h2KijwLXCsCIJOwz7P0tmrovn1jP2Bz35kcdZxdUwTiyeQRlfNPrUQ0bWGTd4ta8/aogPKWTT6pCQUNvZYYpJwbQmrKillEnQvUzmMHiamhaa6/O1mU19eYYHkoMhvQtCTfMCKyNKAkklhP2cCZMDXrrTXinqVwvw==
+
+Option 2: Add a profile to your AWS credentials file
+Copy and paste the following text in your AWS credentials file (%USERPROFILE%\.aws\credentials). Learn more 
+[037708943520_awsisb_IsbUsersPS]
+aws_access_key_id=ASIAQRR5A2CQBNZQGMRY
+aws_secret_access_key=Bif9K1g1KSB2UqaLODcgbZjTsnWkEwdd20t9iZXb
+aws_session_token=IQoJb3JpZ2luX2VjEGsaDmFwLXNvdXRoZWFzdC0xIkgwRgIhALI6GHFqXqHRiGYV41V7OMcxliUzdHb+Jtgl+/pfDTpHAiEArwWSIvSeibdTF2O/j56LdVUpVjFjv+kKbD9+D/3ZZfoqlwMI5P//////////ARAAGgwwMzc3MDg5NDM1MjAiDOV2dD6VmGkmbkLWvyrrAra/Un7XX4zf1BFJQrF0ggDGAiJj+fwVq7+Iv+kgvrk/ryvUKyEkP7l/LhLEZ6v1vBlK71I17xwMjcH4ZI81uv+P2/KiDlIIzHvHq9t0gZ72vk+Wpre1TfUF0k7QAwVkuYbXyI02V4k//UeGTnyGKkbto1hX+jWDhJFAM1e6OC/BtUAw+LI9JyHIpEatO0tvMtnrlUSdhY6ULKO/U8s37M9Fca9rfZSAmzH3BFaQDfBcjsq4GkOwuO0eMZzB6IBLzUkxI1Qi16a+IEfp9qK1hT4NPOHDKUzYdNVOFPqWZJzpO6P7GfbojwG3rkBYgMc/fRV8Ep1EWI7cmNFtwjxZ9Lqpvq402f5JUlm/s9BCf5kFxkQzrUR1Nd8G8TY08o504FZpauvL57ezGavDXcDauZUG+cFuJaaASAugPxpDcMO0S2hlf41pNd1hCyQzXDe55oQHUYvqKKAOAV8OeeoPJ/1NpLWUnOunRPc4NjDur7jGBjqlAWgFMLgUE3yZlaO3rfjEdI2DrSbI6r7yKpz3hXqtR81MN7kFgjMhRZGAVWr+8h2KijwLXCsCIJOwz7P0tmrovn1jP2Bz35kcdZxdUwTiyeQRlfNPrUQ0bWGTd4ta8/aogPKWTT6pCQUNvZYYpJwbQmrKillEnQvUzmMHiamhaa6/O1mU19eYYHkoMhvQtCTfMCKyNKAkklhP2cCZMDXrrTXinqVwvw==
+
+Option 3: Use individual values in your AWS service client
+Copy and paste these values into your code. Learn more 
+AWS access key ID
+
+ASIAQRR5A2CQBNZQGMRY
+
+AWS secret access key
+
+Bif9K1g1KSB2UqaLODcgbZjTsnWkEwdd20t9iZXb
+
+AWS session token
+
+IQoJb3JpZ2luX2VjEGsaDmFwLXNvdXRoZWFzdC0xIkgwRgIhALI6GHFqXqHRiGYV41V7OMcxliUzdHb+Jtgl+/pfDTpHAiEArwWSIvSeibdTF2O/j56LdVUpVjFjv+kKbD9+D/3ZZfoqlwMI5P//////////ARAAGgwwMzc3MDg5NDM1MjAiDOV2dD6VmGkmbkLWvyrrAra/Un7XX4zf1BFJQrF0ggDGAiJj+fwVq7+Iv+kgvrk/ryvUKyEkP7l/LhLEZ6v1vBlK71I17xwMjcH4ZI81uv+P2/KiDlIIzHvHq9t0gZ72vk+Wpre1TfUF0k7QAwVkuYbXyI02V4k//UeGTnyGKkbto1hX+jWDhJFAM1e6OC/BtUAw+LI9JyHIpEatO0tvMtnrlUSdhY6ULKO/U8s37M9Fca9rfZSAmzH3BFaQDfBcjsq4GkOwuO0eMZzB6IBLzUkxI1Qi16a+IEfp9qK1hT4NPOHDKUzYdNVOFPqWZJzpO6P7GfbojwG3rkBYgMc/fRV8Ep1EWI7cmNFtwjxZ9Lqpvq402f5JUlm/s9BCf5kFxkQzrUR1Nd8G8TY08o504FZpauvL57ezGavDXcDauZUG+cFuJaaASAugPxpDcMO0S2hlf41pNd1hCyQzXDe55oQHUYvqKKAOAV8OeeoPJ/1NpLWUnOunRPc4NjDur7jGBjqlAWgFMLgUE3yZlaO3rfjEdI2DrSbI6r7yKpz3hXqtR81MN7kFgjMhRZGAVWr+8h2KijwLXCsCIJOwz7P0tmrovn1jP2Bz35kcdZxdUwTiyeQRlfNPrUQ0bWGTd4ta8/aogPKWTT6pCQUNvZYYpJwbQmrKillEnQvUzmMHiamhaa6/O1mU19eYYHkoMhvQtCTfMCKyNKAkklhP2cCZMDXrrTXinqVwvw==
+
+
+Get credentials for awsisb_IsbUsersPS
+
+Create access for the account Innovation Sandbox - Account 091 (037708943520) with awsisb_IsbUsersPS.
+Use any of the following options to access AWS resources programmatically or from the AWS CLI. You can retrieve credentials as often as needed.
+
+
+macOS and Linux
+
+AWS IAM Identity Center credentials (Recommended)
+To extend the duration of your credentials, we recommend you configure the AWS CLI to retrieve them automatically using the aws configure sso  command. Learn more 
+SSO start URL
+
+https://d-9667b4c0ef.awsapps.com/start/#
+
+SSO Region
+
+ap-southeast-1
+
+Option 1: Set AWS environment variables
+Run the following commands in your terminal to set the AWS environment variables. Learn more 
+export AWS_ACCESS_KEY_ID="ASIAQRR5A2CQBNZQGMRY"
+export AWS_SECRET_ACCESS_KEY="Bif9K1g1KSB2UqaLODcgbZjTsnWkEwdd20t9iZXb"
+export AWS_SESSION_TOKEN="IQoJb3JpZ2luX2VjEGsaDmFwLXNvdXRoZWFzdC0xIkgwRgIhALI6GHFqXqHRiGYV41V7OMcxliUzdHb+Jtgl+/pfDTpHAiEArwWSIvSeibdTF2O/j56LdVUpVjFjv+kKbD9+D/3ZZfoqlwMI5P//////////ARAAGgwwMzc3MDg5NDM1MjAiDOV2dD6VmGkmbkLWvyrrAra/Un7XX4zf1BFJQrF0ggDGAiJj+fwVq7+Iv+kgvrk/ryvUKyEkP7l/LhLEZ6v1vBlK71I17xwMjcH4ZI81uv+P2/KiDlIIzHvHq9t0gZ72vk+Wpre1TfUF0k7QAwVkuYbXyI02V4k//UeGTnyGKkbto1hX+jWDhJFAM1e6OC/BtUAw+LI9JyHIpEatO0tvMtnrlUSdhY6ULKO/U8s37M9Fca9rfZSAmzH3BFaQDfBcjsq4GkOwuO0eMZzB6IBLzUkxI1Qi16a+IEfp9qK1hT4NPOHDKUzYdNVOFPqWZJzpO6P7GfbojwG3rkBYgMc/fRV8Ep1EWI7cmNFtwjxZ9Lqpvq402f5JUlm/s9BCf5kFxkQzrUR1Nd8G8TY08o504FZpauvL57ezGavDXcDauZUG+cFuJaaASAugPxpDcMO0S2hlf41pNd1hCyQzXDe55oQHUYvqKKAOAV8OeeoPJ/1NpLWUnOunRPc4NjDur7jGBjqlAWgFMLgUE3yZlaO3rfjEdI2DrSbI6r7yKpz3hXqtR81MN7kFgjMhRZGAVWr+8h2KijwLXCsCIJOwz7P0tmrovn1jP2Bz35kcdZxdUwTiyeQRlfNPrUQ0bWGTd4ta8/aogPKWTT6pCQUNvZYYpJwbQmrKillEnQvUzmMHiamhaa6/O1mU19eYYHkoMhvQtCTfMCKyNKAkklhP2cCZMDXrrTXinqVwvw=="
+
+Option 2: Add a profile to your AWS credentials file
+Copy and paste the following text in your AWS credentials file (~/.aws/credentials). Learn more 
+[037708943520_awsisb_IsbUsersPS]
+aws_access_key_id=ASIAQRR5A2CQBNZQGMRY
+aws_secret_access_key=Bif9K1g1KSB2UqaLODcgbZjTsnWkEwdd20t9iZXb
+aws_session_token=IQoJb3JpZ2luX2VjEGsaDmFwLXNvdXRoZWFzdC0xIkgwRgIhALI6GHFqXqHRiGYV41V7OMcxliUzdHb+Jtgl+/pfDTpHAiEArwWSIvSeibdTF2O/j56LdVUpVjFjv+kKbD9+D/3ZZfoqlwMI5P//////////ARAAGgwwMzc3MDg5NDM1MjAiDOV2dD6VmGkmbkLWvyrrAra/Un7XX4zf1BFJQrF0ggDGAiJj+fwVq7+Iv+kgvrk/ryvUKyEkP7l/LhLEZ6v1vBlK71I17xwMjcH4ZI81uv+P2/KiDlIIzHvHq9t0gZ72vk+Wpre1TfUF0k7QAwVkuYbXyI02V4k//UeGTnyGKkbto1hX+jWDhJFAM1e6OC/BtUAw+LI9JyHIpEatO0tvMtnrlUSdhY6ULKO/U8s37M9Fca9rfZSAmzH3BFaQDfBcjsq4GkOwuO0eMZzB6IBLzUkxI1Qi16a+IEfp9qK1hT4NPOHDKUzYdNVOFPqWZJzpO6P7GfbojwG3rkBYgMc/fRV8Ep1EWI7cmNFtwjxZ9Lqpvq402f5JUlm/s9BCf5kFxkQzrUR1Nd8G8TY08o504FZpauvL57ezGavDXcDauZUG+cFuJaaASAugPxpDcMO0S2hlf41pNd1hCyQzXDe55oQHUYvqKKAOAV8OeeoPJ/1NpLWUnOunRPc4NjDur7jGBjqlAWgFMLgUE3yZlaO3rfjEdI2DrSbI6r7yKpz3hXqtR81MN7kFgjMhRZGAVWr+8h2KijwLXCsCIJOwz7P0tmrovn1jP2Bz35kcdZxdUwTiyeQRlfNPrUQ0bWGTd4ta8/aogPKWTT6pCQUNvZYYpJwbQmrKillEnQvUzmMHiamhaa6/O1mU19eYYHkoMhvQtCTfMCKyNKAkklhP2cCZMDXrrTXinqVwvw==
+
+Option 3: Use individual values in your AWS service client
+Copy and paste these values into your code. Learn more 
+AWS access key ID
+
+ASIAQRR5A2CQBNZQGMRY
+
+AWS secret access key
+
+Bif9K1g1KSB2UqaLODcgbZjTsnWkEwdd20t9iZXb
+
+AWS session token
+
+IQoJb3JpZ2luX2VjEGsaDmFwLXNvdXRoZWFzdC0xIkgwRgIhALI6GHFqXqHRiGYV41V7OMcxliUzdHb+Jtgl+/pfDTpHAiEArwWSIvSeibdTF2O/j56LdVUpVjFjv+kKbD9+D/3ZZfoqlwMI5P//////////ARAAGgwwMzc3MDg5NDM1MjAiDOV2dD6VmGkmbkLWvyrrAra/Un7XX4zf1BFJQrF0ggDGAiJj+fwVq7+Iv+kgvrk/ryvUKyEkP7l/LhLEZ6v1vBlK71I17xwMjcH4ZI81uv+P2/KiDlIIzHvHq9t0gZ72vk+Wpre1TfUF0k7QAwVkuYbXyI02V4k//UeGTnyGKkbto1hX+jWDhJFAM1e6OC/BtUAw+LI9JyHIpEatO0tvMtnrlUSdhY6ULKO/U8s37M9Fca9rfZSAmzH3BFaQDfBcjsq4GkOwuO0eMZzB6IBLzUkxI1Qi16a+IEfp9qK1hT4NPOHDKUzYdNVOFPqWZJzpO6P7GfbojwG3rkBYgMc/fRV8Ep1EWI7cmNFtwjxZ9Lqpvq402f5JUlm/s9BCf5kFxkQzrUR1Nd8G8TY08o504FZpauvL57ezGavDXcDauZUG+cFuJaaASAugPxpDcMO0S2hlf41pNd1hCyQzXDe55oQHUYvqKKAOAV8OeeoPJ/1NpLWUnOunRPc4NjDur7jGBjqlAWgFMLgUE3yZlaO3rfjEdI2DrSbI6r7yKpz3hXqtR81MN7kFgjMhRZGAVWr+8h2KijwLXCsCIJOwz7P0tmrovn1jP2Bz35kcdZxdUwTiyeQRlfNPrUQ0bWGTd4ta8/aogPKWTT6pCQUNvZYYpJwbQmrKillEnQvUzmMHiamhaa6/O1mU19eYYHkoMhvQtCTfMCKyNKAkklhP2cCZMDXrrTXinqVwvw==
