@@ -9,7 +9,7 @@ const API_BASE_URL = 'https://ir7colijlggp7kfewxctd47pfq0cjmhq.lambda-url.ap-sou
 const USE_MOCK_DATA = true; // Temporarily back to mock while debugging backend
 
 // Create axios instance
-const apiClient = axios.create({
+const httpClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
   headers: {
@@ -75,7 +75,7 @@ const mockAnalysisResult: AnalysisResult = {
 };
 
 // API methods
-export const restaurantApi = {
+const apiClient = {
   // Analyze restaurant reviews
   analyzeRestaurant: async (googleMapsUrl: string): Promise<ApiResponse<AnalysisResult>> => {
     if (USE_MOCK_DATA) {
@@ -140,7 +140,7 @@ export const restaurantApi = {
     }
 
     try {
-      const response = await apiClient.get(`/analysis/${analysisId}`);
+      const response = await httpClient.get(`/analysis/${analysisId}`);
       return {
         success: true,
         data: response.data,
@@ -164,7 +164,7 @@ export const restaurantApi = {
     }
 
     try {
-      const response = await apiClient.get('/history');
+      const response = await httpClient.get('/history');
       return {
         success: true,
         data: response.data,
@@ -243,7 +243,7 @@ export const restaurantApi = {
         data: mockRestaurants,
       };
     }
-  },
+  }
 };
 
 export default apiClient;

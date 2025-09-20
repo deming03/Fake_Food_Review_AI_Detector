@@ -1,19 +1,30 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { StatusBar, Platform, Linking } from 'react-native';
+import { StatusBar, Platform, Linking, View, ActivityIndicator, Text } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+// Authentication
+import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
+
+// Main App Screens
 import HomeScreen from './src/screens/EnhancedHomeScreen';
 import AnalysisScreen from './src/screens/EnhancedAnalysisScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
-import { RootStackParamList } from './src/types';
+import ProfileScreen from './src/screens/ProfileScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 
-const Stack = createStackNavigator<RootStackParamList>();
+import { RootStackParamList, AuthStackParamList } from './src/types';
+import { Colors } from './src/components/EnhancedUI';
+
+const AuthStack = createStackNavigator<AuthStackParamList>();
+const MainStack = createStackNavigator<RootStackParamList>();
 
 // URL configuration for deep linking
-  const prefix = 'truthbite://';
+const prefix = 'truthbite://';
 
 /**
  * Validate if a URL is from Google Maps
@@ -93,12 +104,123 @@ const isValidGoogleMapsURL = (url: string): boolean => {
   }
 };
 
-const App: React.FC = () => {
+// Loading Component
+const LoadingScreen: React.FC = () => (
+  <View style={{
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+  }}>
+    <ActivityIndicator size="large" color={Colors.primary} />
+    <Text style={{
+      marginTop: 20,
+      fontSize: 16,
+      color: Colors.textSecondary,
+    }}>Loading TRUTH BITE...</Text>
+  </View>
+);
+
+// Authentication Stack Navigator
+const AuthNavigator: React.FC = () => (
+  <AuthStack.Navigator
+    screenOptions={{
+      headerShown: false,
+      cardStyle: { backgroundColor: Colors.background },
+    }}
+  >
+    <AuthStack.Screen name="Login" component={LoginScreen} />
+    <AuthStack.Screen name="Register" component={RegisterScreen} />
+  </AuthStack.Navigator>
+);
+
+// Main App Stack Navigator (for authenticated users)
+const MainNavigator: React.FC = () => (
+  <MainStack.Navigator
+    initialRouteName="Home"
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: '#ffffff',
+        elevation: 2,
+        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+      },
+      headerTintColor: '#333333',
+      headerTitleStyle: {
+        fontWeight: '600',
+        fontSize: 18,
+      },
+      headerBackTitle: '',
+      cardStyle: { backgroundColor: '#f5f5f5' },
+    }}
+  >
+    <MainStack.Screen 
+      name="Home" 
+      component={HomeScreen}
+      options={{
+        title: 'TRUTH BITE',
+        headerStyle: {
+          backgroundColor: '#FF6B35',
+        },
+        headerTintColor: '#ffffff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 20,
+        },
+      }}
+    />
+    <MainStack.Screen 
+      name="Analysis" 
+      component={AnalysisScreen}
+      options={{
+        title: 'Revealing Truth...',
+        headerLeft: () => null,
+      }}
+    />
+    <MainStack.Screen 
+      name="Results" 
+      component={ResultsScreen}
+      options={{
+        title: 'Truth Report',
+        headerLeft: () => null,
+      }}
+    />
+    <MainStack.Screen 
+      name="History" 
+      component={HistoryScreen}
+      options={{
+        title: 'Analysis History',
+      }}
+    />
+    <MainStack.Screen 
+      name="Profile" 
+      component={ProfileScreen}
+      options={{
+        title: 'Profile',
+      }}
+    />
+    <MainStack.Screen 
+      name="Settings" 
+      component={SettingsScreen}
+      options={{
+        title: 'Settings',
+      }}
+    />
+  </MainStack.Navigator>
+);
+
+// Main App Navigation Component (handles auth state)
+const AppNavigator: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+
   useEffect(() => {
+    // Only handle deep linking for authenticated users
+    if (!isAuthenticated) return;
+
     // Handle deep linking when app is already open
     const handleDeepLink = (event: any) => {
       console.log('Deep link received - full event:', event);
-      
       // Try different ways to get the URL
       let url = null;
       if (typeof event === 'string') {
@@ -166,87 +288,45 @@ const App: React.FC = () => {
     return () => {
       subscription?.remove();
     };
-  }, []);
+  }, [isAuthenticated]);
 
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  return isAuthenticated ? <MainNavigator /> : <AuthNavigator />;
+};
+
+// Root App Component with Authentication Provider
+const App: React.FC = () => {
   const linking = {
     prefixes: [prefix, 'truthbite://'],
     config: {
       screens: {
+        Login: 'login',
+        Register: 'register',
         Home: '',
         Analysis: 'analyze',
         Results: 'results',
         History: 'history',
+        Profile: 'profile',
+        Settings: 'settings',
       },
     },
   };
 
   return (
-    <NavigationContainer linking={linking}>
-      <StatusBar 
-        barStyle="dark-content" 
-        backgroundColor="#ffffff" 
-        translucent={Platform.OS === 'android'}
-      />
-      <Stack.Navigator
-        initialRouteName="Home"
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: '#ffffff',
-            elevation: 2,
-            shadowOpacity: 0.1,
-            shadowOffset: { width: 0, height: 2 },
-            shadowRadius: 4,
-          },
-          headerTintColor: '#333333',
-          headerTitleStyle: {
-            fontWeight: '600',
-            fontSize: 18,
-          },
-          headerBackTitle: '',
-          cardStyle: { backgroundColor: '#f5f5f5' },
-        }}
-      >
-        <Stack.Screen 
-          name="Home" 
-          component={HomeScreen}
-          options={{
-            title: 'TRUTH BITE',
-            headerStyle: {
-              backgroundColor: '#FF6B35',
-            },
-            headerTintColor: '#ffffff',
-            headerTitleStyle: {
-              fontWeight: 'bold',
-              fontSize: 20,
-            },
-          }}
+    <AuthProvider>
+      <NavigationContainer linking={linking}>
+        <StatusBar 
+          barStyle="dark-content" 
+          backgroundColor="#ffffff" 
+          translucent={Platform.OS === 'android'}
         />
-        <Stack.Screen 
-          name="Analysis" 
-          component={AnalysisScreen}
-          options={{
-            title: 'Revealing Truth...',
-            headerLeft: () => null, // Prevent user from going back during analysis
-          }}
-        />
-        <Stack.Screen 
-          name="Results" 
-          component={ResultsScreen}
-          options={{
-            title: 'Truth Report',
-            headerLeft: () => null, // Prevent user from accidentally returning to analysis page
-          }}
-        />
-        <Stack.Screen 
-          name="History" 
-          component={HistoryScreen}
-          options={{
-            title: 'Analysis History',
-          }}
-        />
-      </Stack.Navigator>
-      <Toast />
-    </NavigationContainer>
+        <AppNavigator />
+        <Toast />
+      </NavigationContainer>
+    </AuthProvider>
   );
 };
 

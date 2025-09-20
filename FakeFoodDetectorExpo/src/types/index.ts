@@ -34,6 +34,13 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+// Authentication Stack
+export type AuthStackParamList = {
+  Login: undefined;
+  Register: undefined;
+};
+
+// Main App Stack (authenticated users)
 export type RootStackParamList = {
   Home: undefined;
   Analysis: {
@@ -43,4 +50,14 @@ export type RootStackParamList = {
     analysisResult: AnalysisResult;
   };
   History: undefined;
+  Profile: undefined;
+  Settings: undefined;
+  SearchResults: {
+    query: string;
+    location?: string;
+  };
+  OnboardingFlow: undefined;
 };
+
+// Combined navigation type
+export type AppNavigationParamList = AuthStackParamList & RootStackParamList;
