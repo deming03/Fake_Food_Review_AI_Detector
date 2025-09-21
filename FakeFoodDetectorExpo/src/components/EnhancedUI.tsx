@@ -4,8 +4,8 @@ import * as Animatable from 'react-native-animatable';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 
-// 🎨 High-Tech Color Palette
-export const Colors = {
+// 🎨 Dark Mode Color Palette
+export const DarkColors = {
   primary: '#00D9FF',      // Electric cyan
   primaryLight: '#33E1FF',
   primaryDark: '#00BFE6',
@@ -24,6 +24,35 @@ export const Colors = {
   shadow: 'rgba(0, 0, 0, 0.4)',
   cardBorder: '#2D3748',   // Subtle border
   glow: 'rgba(0, 217, 255, 0.3)', // Cyan glow
+};
+
+// 🌅 Light Mode Color Palette
+export const LightColors = {
+  primary: '#0080FF',      // Professional blue
+  primaryLight: '#3399FF',
+  primaryDark: '#0066CC',
+  secondary: '#6366F1',    // Indigo
+  secondaryLight: '#818CF8',
+  accent: '#F59E0B',       // Amber
+  success: '#10B981',      // Emerald
+  warning: '#F59E0B',
+  error: '#EF4444',
+  background: '#F8FAFC',   // Light background
+  surface: '#FFFFFF',      // White surface
+  surfaceLight: '#F1F5F9', // Light gray surface
+  text: '#1F2937',         // Dark text
+  textSecondary: '#6B7280', // Gray text
+  textLight: '#9CA3AF',    // Light gray text
+  shadow: 'rgba(0, 0, 0, 0.1)',
+  cardBorder: '#E5E7EB',   // Light border
+  glow: 'rgba(0, 128, 255, 0.2)', // Blue glow
+};
+
+// 🎨 Dynamic Colors - Export based on theme
+export let Colors = DarkColors; // Default to dark mode
+
+export const updateTheme = (isDarkMode: boolean) => {
+  Colors = isDarkMode ? DarkColors : LightColors;
 };
 
 // 🎭 Animated Button Component

@@ -10,52 +10,69 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
+import * as Animatable from 'react-native-animatable';
 import { RootStackParamList, Review } from '../types';
 import { getCredibilityColor, getCredibilityDescription, formatDate } from '../utils/helpers';
+import { Colors, ModernCard, AnimatedButton } from '../components/EnhancedUI';
+import { SafeLinearGradient as LinearGradient } from '../components/SafeLinearGradient';
+import { useTheme } from '../contexts/ThemeContext';
 
 type ResultsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Results'>;
 type ResultsScreenRouteProp = RouteProp<RootStackParamList, 'Results'>;
 
 const { width } = Dimensions.get('window');
 
-// Theme colors
-const THEME = {
-  primary: '#FF6B35',
-  secondary: '#4CAF50',
-  danger: '#F44336',
-  warning: '#FF9800',
-  background: '#f8f9fa',
-  surface: '#ffffff',
-  text: '#1a1a1a',
-  textSecondary: '#666666',
-  border: '#E0E0E0',
-};
-
-const RestaurantInfo: React.FC<{ analysisResult: any }> = ({ analysisResult }) => {
+const RestaurantInfo: React.FC<{ analysisResult: any; colors: any }> = ({ analysisResult, colors }) => {
   return (
-    <View style={styles.restaurantCard}>
-      <Text style={styles.restaurantTitle}>
-        🍽️ {analysisResult.restaurantName || 'Restaurant Analysis'}
-      </Text>
-      {analysisResult.restaurantAddress && (
-        <Text style={styles.restaurantAddress}>
-          📍 {analysisResult.restaurantAddress}
-        </Text>
-      )}
-      <View style={styles.restaurantMeta}>
-        <View style={styles.metaItem}>
-          <Text style={styles.metaLabel}>Original Rating</Text>
-          <Text style={styles.metaValue}>
-            {analysisResult.originalRating ? `${analysisResult.originalRating}/5 ⭐` : 'N/A'}
-          </Text>
+    <Animatable.View animation="fadeInUp" duration={600}>
+      <ModernCard variant="highlighted">
+        <LinearGradient
+          colors={[colors.primary + '20', colors.secondary + '10']}
+          style={styles.restaurantHeader}
+        >
+          <Ionicons name="restaurant" size={32} color={colors.primary} />
+          <View style={styles.restaurantInfo}>
+            <Text style={[styles.restaurantTitle, { color: colors.text }]}>
+              {analysisResult.restaurantName || 'Restaurant Analysis'}
+            </Text>
+            {analysisResult.restaurantAddress && (
+              <Text style={[styles.restaurantAddress, { color: colors.textSecondary }]}>
+                📍 {analysisResult.restaurantAddress}
+              </Text>
+            )}
+          </View>
+        </LinearGradient>
+        
+        <View style={styles.restaurantMeta}>
+          <View style={styles.metaItem}>
+            <LinearGradient
+              colors={[colors.warning + '20', colors.warning + '10']}
+              style={styles.metaBadge}
+            >
+              <Ionicons name="star" size={16} color={colors.warning} />
+              <Text style={[styles.metaLabel, { color: colors.textSecondary }]}>Original Rating</Text>
+            </LinearGradient>
+            <Text style={[styles.metaValue, { color: colors.text }]}>
+              {analysisResult.originalRating ? `${analysisResult.originalRating}/5 ⭐` : 'N/A'}
+            </Text>
+          </View>
+          
+          <View style={styles.metaItem}>
+            <LinearGradient
+              colors={[colors.primary + '20', colors.primary + '10']}
+              style={styles.metaBadge}
+            >
+              <Ionicons name="documents" size={16} color={colors.primary} />
+              <Text style={[styles.metaLabel, { color: colors.textSecondary }]}>Reviews Analyzed</Text>
+            </LinearGradient>
+            <Text style={[styles.metaValue, { color: colors.text }]}>
+              {analysisResult.totalReviewsAnalyzed}
+            </Text>
+          </View>
         </View>
-        <View style={styles.metaDivider} />
-        <View style={styles.metaItem}>
-          <Text style={styles.metaLabel}>Reviews Analyzed</Text>
-          <Text style={styles.metaValue}>{analysisResult.totalReviewsAnalyzed}</Text>
-        </View>
-      </View>
-    </View>
+      </ModernCard>
+    </Animatable.View>
   );
 };
 
@@ -88,7 +105,7 @@ const SmoothCircularScore: React.FC<{ score: number }> = ({ score }) => {
         <View style={[styles.backgroundCircle, { 
           width: size - strokeWidth, 
           height: size - strokeWidth,
-          borderColor: THEME.border,
+          borderColor: Colors.cardBorder,
           borderWidth: 2,
         }]} />
         
@@ -102,7 +119,7 @@ const SmoothCircularScore: React.FC<{ score: number }> = ({ score }) => {
                 position: 'absolute',
                 left: mark.x - 2,
                 top: mark.y - 2,
-                backgroundColor: mark.isActive ? color : THEME.border,
+                backgroundColor: mark.isActive ? color : Colors.cardBorder,
                 opacity: mark.opacity,
                 transform: [{ scale: mark.isActive && mark.opacity > 0.7 ? 1.2 : 0.8 }],
               },
@@ -125,7 +142,7 @@ const SmoothCircularScore: React.FC<{ score: number }> = ({ score }) => {
   );
 };
 
-const EnhancedAnalytics: React.FC<{ analysisResult: any }> = ({ analysisResult }) => {
+const EnhancedAnalytics: React.FC<{ analysisResult: any; colors: any }> = ({ analysisResult, colors }) => {
   const totalReviews = analysisResult.totalReviewsAnalyzed;
   const fakeReviews = analysisResult.fakeReviewsDetected;
   const realReviews = totalReviews - fakeReviews;
@@ -140,58 +157,75 @@ const EnhancedAnalytics: React.FC<{ analysisResult: any }> = ({ analysisResult }
   const fakePercentage = Math.round((fakeReviews / totalReviews) * 100);
 
   return (
-    <View style={styles.analyticsCard}>
-      <Text style={styles.analyticsTitle}>📊 Detailed Analytics</Text>
+    <Animatable.View animation="fadeInUp" duration={600}>
+      <ModernCard variant="highlighted">
+        <Text style={[styles.analyticsTitle, { color: colors.text }]}>📊 Detailed Analytics</Text>
       
       {/* Main Stats Grid */}
       <View style={styles.statsGrid}>
-        <View style={[styles.statBox, { backgroundColor: THEME.primary + '15' }]}>
-          <Text style={[styles.statNumber, { color: THEME.primary }]}>{totalReviews}</Text>
-          <Text style={styles.statLabel}>Total Reviews</Text>
-        </View>
+        <LinearGradient
+          colors={[colors.primary + '20', colors.primary + '10']}
+          style={styles.statBox}
+        >
+          <Ionicons name="document-text" size={20} color={colors.primary} />
+          <Text style={[styles.statNumber, { color: colors.primary }]}>{totalReviews}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Total Reviews</Text>
+        </LinearGradient>
         
-        <View style={[styles.statBox, { backgroundColor: THEME.danger + '15' }]}>
-          <Text style={[styles.statNumber, { color: THEME.danger }]}>{fakeReviews}</Text>
-          <Text style={styles.statLabel}>Fake Reviews</Text>
-        </View>
+        <LinearGradient
+          colors={[colors.error + '20', colors.error + '10']}
+          style={styles.statBox}
+        >
+          <Ionicons name="warning" size={20} color={colors.error} />
+          <Text style={[styles.statNumber, { color: colors.error }]}>{fakeReviews}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Fake Reviews</Text>
+        </LinearGradient>
         
-        <View style={[styles.statBox, { backgroundColor: THEME.secondary + '15' }]}>
-          <Text style={[styles.statNumber, { color: THEME.secondary }]}>{realReviews}</Text>
-          <Text style={styles.statLabel}>Real Reviews</Text>
-        </View>
+        <LinearGradient
+          colors={[colors.success + '20', colors.success + '10']}
+          style={styles.statBox}
+        >
+          <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+          <Text style={[styles.statNumber, { color: colors.success }]}>{realReviews}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Real Reviews</Text>
+        </LinearGradient>
         
-        <View style={[styles.statBox, { backgroundColor: THEME.warning + '15' }]}>
-          <Text style={[styles.statNumber, { color: THEME.warning }]}>{realRating}⭐</Text>
-          <Text style={styles.statLabel}>True Rating</Text>
-        </View>
+        <LinearGradient
+          colors={[colors.warning + '20', colors.warning + '10']}
+          style={styles.statBox}
+        >
+          <Ionicons name="star" size={20} color={colors.warning} />
+          <Text style={[styles.statNumber, { color: colors.warning }]}>{realRating}⭐</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>True Rating</Text>
+        </LinearGradient>
       </View>
 
       {/* Percentage Breakdown */}
       <View style={styles.percentageSection}>
-        <Text style={styles.percentageTitle}>Review Composition</Text>
+        <Text style={[styles.percentageTitle, { color: colors.text }]}>Review Composition</Text>
         <View style={styles.percentageBars}>
           <View style={styles.percentageRow}>
             <View style={styles.percentageInfo}>
-              <View style={[styles.percentageIndicator, { backgroundColor: THEME.secondary }]} />
-              <Text style={styles.percentageLabel}>Authentic ({authenticPercentage}%)</Text>
+              <View style={[styles.percentageIndicator, { backgroundColor: colors.success }]} />
+              <Text style={[styles.percentageLabel, { color: colors.textSecondary }]}>Authentic ({authenticPercentage}%)</Text>
             </View>
-            <View style={styles.percentageBar}>
+            <View style={[styles.percentageBar, { backgroundColor: colors.cardBorder }]}>
               <View style={[styles.percentageBarFill, { 
                 width: `${authenticPercentage}%`, 
-                backgroundColor: THEME.secondary 
+                backgroundColor: colors.success 
               }]} />
             </View>
           </View>
           
           <View style={styles.percentageRow}>
             <View style={styles.percentageInfo}>
-              <View style={[styles.percentageIndicator, { backgroundColor: THEME.danger }]} />
-              <Text style={styles.percentageLabel}>Suspicious ({fakePercentage}%)</Text>
+              <View style={[styles.percentageIndicator, { backgroundColor: colors.error }]} />
+              <Text style={[styles.percentageLabel, { color: colors.textSecondary }]}>Suspicious ({fakePercentage}%)</Text>
             </View>
-            <View style={styles.percentageBar}>
+            <View style={[styles.percentageBar, { backgroundColor: colors.cardBorder }]}>
               <View style={[styles.percentageBarFill, { 
                 width: `${fakePercentage}%`, 
-                backgroundColor: THEME.danger 
+                backgroundColor: colors.error 
               }]} />
             </View>
           </View>
@@ -199,28 +233,29 @@ const EnhancedAnalytics: React.FC<{ analysisResult: any }> = ({ analysisResult }
       </View>
 
       {/* Key Insights */}
-      <View style={styles.insightsContainer}>
-        <Text style={styles.insightsTitle}>🔍 Key Insights</Text>
+      <View style={[styles.insightsContainer, { borderTopColor: colors.cardBorder }]}>
+        <Text style={[styles.insightsTitle, { color: colors.text }]}>🔍 Key Insights</Text>
         <View style={styles.insightItem}>
-          <Text style={styles.insightBullet}>•</Text>
-          <Text style={styles.insightText}>
+          <Text style={[styles.insightBullet, { color: colors.primary }]}>•</Text>
+          <Text style={[styles.insightText, { color: colors.textSecondary }]}>
             {fakePercentage > 30 ? 'High' : fakePercentage > 15 ? 'Moderate' : 'Low'} level of suspicious activity detected
           </Text>
         </View>
         <View style={styles.insightItem}>
-          <Text style={styles.insightBullet}>•</Text>
-          <Text style={styles.insightText}>
+          <Text style={[styles.insightBullet, { color: colors.primary }]}>•</Text>
+          <Text style={[styles.insightText, { color: colors.textSecondary }]}>
             Without fake reviews, rating would be {realRating} stars
           </Text>
         </View>
         <View style={styles.insightItem}>
-          <Text style={styles.insightBullet}>•</Text>
-          <Text style={styles.insightText}>
+          <Text style={[styles.insightBullet, { color: colors.primary }]}>•</Text>
+          <Text style={[styles.insightText, { color: colors.textSecondary }]}>
             AI analyzed {totalReviews} reviews using advanced pattern detection
           </Text>
         </View>
       </View>
-    </View>
+      </ModernCard>
+    </Animatable.View>
   );
 };
 
@@ -229,6 +264,7 @@ const ResultsScreen: React.FC = () => {
   const route = useRoute<ResultsScreenRouteProp>();
   const { analysisResult } = route.params;
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const { colors } = useTheme();
   
   const displayedReviews = showAllReviews ? analysisResult.reviews : analysisResult.reviews.slice(0, 5);
 
@@ -249,13 +285,16 @@ const ResultsScreen: React.FC = () => {
   };
 
   const renderReview = (review: Review, index: number) => (
-    <View
-      key={review.id}
-      style={[
-        styles.reviewCard,
-        review.isDetectedAsFake && styles.fakeReviewCard,
-      ]}
+    <Animatable.View 
+      key={review.id} 
+      animation="fadeInUp" 
+      delay={index * 100}
+      duration={600}
+      style={styles.reviewCard}
     >
+      <ModernCard 
+        variant={review.isDetectedAsFake ? 'warning' : 'default'}
+      >
       <View style={styles.reviewHeader}>
         <View style={styles.reviewInfo}>
           <Text style={styles.reviewAuthor}>{review.author}</Text>
@@ -298,18 +337,39 @@ const ResultsScreen: React.FC = () => {
           </Text>
         </View>
       )}
-    </View>
+      </ModernCard>
+    </Animatable.View>
   );
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>🔍 TRUTH BITE Analysis</Text>
-        <Text style={styles.subtitle}>AI-Powered Review Authenticity Report</Text>
-      </View>
+    <LinearGradient
+      colors={[colors.background, colors.surface]}
+      style={styles.container}
+    >
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <LinearGradient
+          colors={[colors.surface, colors.surfaceLight]}
+          style={styles.header}
+        >
+          <View style={styles.headerContent}>
+            <LinearGradient
+              colors={[colors.primary + '30', colors.secondary + '20']}
+              style={[styles.headerIcon, { borderColor: colors.primary + '40' }]}
+            >
+              <Ionicons name="shield-checkmark" size={32} color={colors.primary} />
+            </LinearGradient>
+            <View style={styles.headerText}>
+              <Text style={[styles.title, { color: colors.text, textShadowColor: colors.glow }]}>🔍 TRUTH BITE Analysis</Text>
+              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>AI-Powered Review Authenticity Report</Text>
+            </View>
+          </View>
+        </LinearGradient>
 
       {/* 1. Restaurant Information First */}
-      <RestaurantInfo analysisResult={analysisResult} />
+      <RestaurantInfo analysisResult={analysisResult} colors={colors} />
 
       {/* 2. Truth Score Section */}
       <View style={styles.scoreSection}>
@@ -330,31 +390,39 @@ const ResultsScreen: React.FC = () => {
       </View>
 
       {/* 3. Enhanced Analytics */}
-      <EnhancedAnalytics analysisResult={analysisResult} />
+      <EnhancedAnalytics analysisResult={analysisResult} colors={colors} />
 
       {/* Suspicious Patterns */}
       {analysisResult.suspiciousPatterns.length > 0 && (
-        <View style={styles.patternsCard}>
-          <Text style={styles.patternsTitle}>🚨 Suspicious Patterns Detected</Text>
-          {analysisResult.suspiciousPatterns.map((pattern, index) => (
-            <View key={index} style={styles.patternItem}>
-              <Text style={styles.patternText}>• {pattern}</Text>
-            </View>
-          ))}
-        </View>
+        <Animatable.View animation="fadeInUp" duration={600} style={styles.patternsCard}>
+          <ModernCard variant="warning">
+            <Text style={[styles.patternsTitle, { color: colors.text }]}>🚨 Suspicious Patterns Detected</Text>
+            {analysisResult.suspiciousPatterns.map((pattern, index) => (
+              <View key={index} style={styles.patternItem}>
+                <LinearGradient
+                  colors={[colors.warning + '15', colors.warning + '10']}
+                  style={styles.patternBadge}
+                >
+                  <Ionicons name="alert-circle" size={16} color={colors.warning} />
+                  <Text style={[styles.patternText, { color: colors.textSecondary }]}>{pattern}</Text>
+                </LinearGradient>
+              </View>
+            ))}
+          </ModernCard>
+        </Animatable.View>
       )}
 
       {/* 4. Reviews Analysis (Limited Display) */}
       <View style={styles.reviewsSection}>
         <View style={styles.reviewsSectionHeader}>
-          <Text style={styles.reviewsTitle}>🤖 AI Review Analysis</Text>
-          <View style={styles.reviewsCounter}>
+          <Text style={[styles.reviewsTitle, { color: colors.text }]}>🤖 AI Review Analysis</Text>
+          <View style={[styles.reviewsCounter, { backgroundColor: colors.primary }]}>
             <Text style={styles.reviewsCounterText}>
               {displayedReviews.length}/{analysisResult.reviews.length}
             </Text>
           </View>
         </View>
-        <Text style={styles.reviewsSubtitle}>
+        <Text style={[styles.reviewsSubtitle, { color: colors.textSecondary }]}>
           Detailed AI analysis of individual reviews
         </Text>
         
@@ -384,130 +452,137 @@ const ResultsScreen: React.FC = () => {
 
       {/* Action Buttons with Theme Colors */}
       <View style={styles.actionsContainer}>
-        <TouchableOpacity 
-          style={[styles.primaryButton, { backgroundColor: THEME.primary }]} 
+        <AnimatedButton
+          title="🔍 Analyze Another Restaurant"
           onPress={handleGoHome}
-        >
-          <View style={styles.buttonContent}>
-            <Text style={styles.buttonIcon}>🔍</Text>
-            <Text style={styles.primaryButtonText}>Analyze Another Restaurant</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.secondaryButton, { 
-            backgroundColor: THEME.surface, 
-            borderColor: THEME.primary 
-          }]} 
+          icon="home"
+        />
+        <AnimatedButton
+          title="📊 View Analysis History"
           onPress={handleViewHistory}
-        >
-          <View style={styles.buttonContent}>
-            <Text style={styles.buttonIcon}>📊</Text>
-            <Text style={[styles.secondaryButtonText, { color: THEME.primary }]}>View Analysis History</Text>
-          </View>
-        </TouchableOpacity>
+          variant="outline"
+          icon="analytics"
+        />
       </View>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          Analysis completed on {formatDate(analysisResult.analysisDate)}
-        </Text>
-        <Text style={styles.footerText}>
-          Powered by TRUTH BITE AI • Protecting Diners Since 2024
-        </Text>
-      </View>
-    </ScrollView>
+        <View style={styles.footer}>
+          <Text style={[styles.footerText, { color: colors.textSecondary }]}>
+            Analysis completed on {formatDate(analysisResult.analysisDate)}
+          </Text>
+          <Text style={[styles.footerText, { color: colors.textSecondary }]}>
+            Powered by TRUTH BITE AI • Protecting Diners Since 2024
+          </Text>
+        </View>
+      </ScrollView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.background,
+  },
+  scrollContent: {
+    paddingBottom: 120, // Extra space for bottom navigation
   },
   header: {
-    alignItems: 'center',
-    padding: 25,
-    backgroundColor: THEME.surface,
-    marginBottom: 20,
+    paddingTop: 50,
+    paddingBottom: 25,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: THEME.border,
+    borderBottomColor: Colors.cardBorder,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+    borderWidth: 2,
+    borderColor: Colors.primary + '40',
+  },
+  headerText: {
+    flex: 1,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: THEME.text,
+    color: Colors.text,
     letterSpacing: 0.5,
+    textShadowColor: Colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 4,
   },
   subtitle: {
-    fontSize: 16,
-    color: THEME.textSecondary,
-    marginTop: 5,
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 4,
     fontWeight: '500',
   },
 
   // Restaurant Info Card
-  restaurantCard: {
-    backgroundColor: THEME.surface,
-    marginHorizontal: 15,
-    marginBottom: 20,
-    borderRadius: 20,
-    padding: 25,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  restaurantHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderRadius: 15,
+    marginBottom: 15,
+  },
+  restaurantInfo: {
+    flex: 1,
+    marginLeft: 15,
   },
   restaurantTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: THEME.text,
-    marginBottom: 8,
+    color: Colors.text,
+    marginBottom: 6,
   },
   restaurantAddress: {
     fontSize: 14,
-    color: THEME.textSecondary,
-    marginBottom: 15,
+    color: Colors.textSecondary,
     lineHeight: 20,
   },
   restaurantMeta: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-around',
   },
   metaItem: {
     flex: 1,
     alignItems: 'center',
   },
+  metaBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginBottom: 8,
+    gap: 6,
+  },
   metaLabel: {
-    fontSize: 12,
-    color: THEME.textSecondary,
-    marginBottom: 4,
+    fontSize: 11,
+    color: Colors.textSecondary,
+    fontWeight: '600',
   },
   metaValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: THEME.text,
-  },
-  metaDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: THEME.border,
-    marginHorizontal: 15,
+    color: Colors.text,
+    textAlign: 'center',
   },
 
   // Smooth Circular Score
   scoreSection: {
-    backgroundColor: THEME.surface,
     marginHorizontal: 15,
     marginBottom: 20,
-    borderRadius: 20,
-    padding: 25,
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
   },
   smoothCircularContainer: {
     alignItems: 'center',
@@ -535,7 +610,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: THEME.border,
+    borderColor: Colors.cardBorder,
   },
   scoreNumber: {
     fontSize: 36,
@@ -555,7 +630,7 @@ const styles = StyleSheet.create({
   },
   scoreBadgeText: {
     fontSize: 10,
-    color: THEME.surface,
+    color: Colors.surface,
     fontWeight: 'bold',
   },
   scoreDescription: {
@@ -569,27 +644,19 @@ const styles = StyleSheet.create({
   },
   scoreSubtext: {
     fontSize: 14,
-    color: THEME.textSecondary,
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
 
-  // Enhanced Analytics
+  // Enhanced Analytics  
   analyticsCard: {
-    backgroundColor: THEME.surface,
     marginHorizontal: 15,
     marginBottom: 20,
-    borderRadius: 20,
-    padding: 25,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   analyticsTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: THEME.text,
+    color: Colors.text,
     marginBottom: 20,
   },
   statsGrid: {
@@ -604,6 +671,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     alignItems: 'center',
+    gap: 8,
   },
   statNumber: {
     fontSize: 20,
@@ -612,8 +680,9 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: THEME.textSecondary,
+    color: Colors.textSecondary,
     textAlign: 'center',
+    fontWeight: '600',
   },
   percentageSection: {
     marginBottom: 20,
@@ -621,7 +690,7 @@ const styles = StyleSheet.create({
   percentageTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: THEME.text,
+    color: Colors.text,
     marginBottom: 12,
   },
   percentageBars: {
@@ -644,12 +713,12 @@ const styles = StyleSheet.create({
   },
   percentageLabel: {
     fontSize: 14,
-    color: THEME.textSecondary,
+    color: Colors.textSecondary,
   },
   percentageBar: {
     flex: 1,
     height: 6,
-    backgroundColor: THEME.border,
+    backgroundColor: Colors.cardBorder,
     borderRadius: 3,
     overflow: 'hidden',
     marginLeft: 10,
@@ -661,12 +730,12 @@ const styles = StyleSheet.create({
   insightsContainer: {
     paddingTop: 15,
     borderTopWidth: 1,
-    borderTopColor: THEME.border,
+    borderTopColor: Colors.cardBorder,
   },
   insightsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: THEME.text,
+    color: Colors.text,
     marginBottom: 12,
   },
   insightItem: {
@@ -675,45 +744,44 @@ const styles = StyleSheet.create({
   },
   insightBullet: {
     fontSize: 14,
-    color: THEME.primary,
+    color: Colors.primary,
     marginRight: 8,
     fontWeight: 'bold',
   },
   insightText: {
     fontSize: 14,
-    color: THEME.textSecondary,
+    color: Colors.textSecondary,
     flex: 1,
     lineHeight: 20,
   },
 
   // Patterns Card
   patternsCard: {
-    backgroundColor: THEME.surface,
     marginHorizontal: 15,
     marginBottom: 20,
-    borderRadius: 16,
-    padding: 20,
-    borderLeftWidth: 5,
-    borderLeftColor: THEME.primary,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   patternsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: THEME.text,
+    color: Colors.text,
     marginBottom: 10,
   },
   patternItem: {
     marginBottom: 8,
   },
+  patternBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 8,
+  },
   patternText: {
     fontSize: 14,
-    color: THEME.textSecondary,
+    color: Colors.textSecondary,
     lineHeight: 20,
+    flex: 1,
   },
 
   // Reviews Section
@@ -730,39 +798,30 @@ const styles = StyleSheet.create({
   reviewsTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: THEME.text,
+    color: Colors.text,
   },
   reviewsCounter: {
-    backgroundColor: THEME.primary,
+    backgroundColor: Colors.primary,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
   },
   reviewsCounterText: {
-    color: THEME.surface,
+    color: Colors.surface,
     fontSize: 12,
     fontWeight: 'bold',
   },
   reviewsSubtitle: {
     fontSize: 14,
-    color: THEME.textSecondary,
+    color: Colors.textSecondary,
     marginBottom: 15,
   },
   reviewCard: {
-    backgroundColor: THEME.surface,
-    borderRadius: 16,
-    padding: 18,
     marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   fakeReviewCard: {
     borderLeftWidth: 5,
-    borderLeftColor: THEME.danger,
-    backgroundColor: THEME.danger + '08',
+    borderLeftColor: Colors.error,
   },
   reviewHeader: {
     flexDirection: 'row',
@@ -776,11 +835,11 @@ const styles = StyleSheet.create({
   reviewAuthor: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: THEME.text,
+    color: Colors.text,
   },
   reviewDate: {
     fontSize: 12,
-    color: THEME.textSecondary,
+    color: Colors.textSecondary,
     marginTop: 2,
   },
   ratingContainer: {
@@ -791,39 +850,39 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   fakeLabel: {
-    backgroundColor: THEME.danger,
+    backgroundColor: Colors.error,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   fakeLabelText: {
     fontSize: 10,
-    color: THEME.surface,
+    color: Colors.surface,
     fontWeight: 'bold',
   },
   reviewText: {
     fontSize: 14,
-    color: THEME.text,
+    color: Colors.text,
     lineHeight: 22,
     marginBottom: 12,
   },
   aiDetectionContainer: {
-    backgroundColor: THEME.warning + '15',
+    backgroundColor: Colors.warning + '15',
     padding: 12,
     borderRadius: 8,
     marginBottom: 12,
     borderLeftWidth: 3,
-    borderLeftColor: THEME.warning,
+    borderLeftColor: Colors.warning,
   },
   aiDetectionTitle: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: THEME.warning,
+    color: Colors.warning,
     marginBottom: 4,
   },
   aiDetectionReason: {
     fontSize: 12,
-    color: THEME.textSecondary,
+    color: Colors.textSecondary,
     lineHeight: 18,
     fontStyle: 'italic',
   },
@@ -832,7 +891,7 @@ const styles = StyleSheet.create({
   },
   confidenceBar: {
     height: 4,
-    backgroundColor: THEME.border,
+    backgroundColor: Colors.cardBorder,
     borderRadius: 2,
     marginBottom: 4,
     overflow: 'hidden',
@@ -843,7 +902,7 @@ const styles = StyleSheet.create({
   },
   confidenceLabel: {
     fontSize: 11,
-    color: THEME.textSecondary,
+    color: Colors.textSecondary,
     fontWeight: '500',
     textAlign: 'right',
   },
@@ -865,44 +924,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     marginBottom: 25,
   },
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonIcon: {
-    fontSize: 18,
-    marginRight: 10,
-  },
-  primaryButton: {
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 12,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  primaryButtonText: {
-    color: THEME.surface,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  secondaryButton: {
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 2,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  secondaryButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
   footer: {
     alignItems: 'center',
     padding: 25,
@@ -910,7 +931,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: THEME.textSecondary,
+    color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: 3,
     lineHeight: 18,

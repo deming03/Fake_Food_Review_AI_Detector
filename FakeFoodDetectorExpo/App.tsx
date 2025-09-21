@@ -8,6 +8,7 @@ import Toast from 'react-native-toast-message';
 
 // Authentication
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+import { ThemeProvider } from './src/contexts/ThemeContext';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
@@ -22,6 +23,7 @@ import SettingsScreen from './src/screens/SettingsScreen';
 
 import { RootStackParamList, AuthStackParamList } from './src/types';
 import { Colors, showToast } from './src/components/EnhancedUI';
+import { useTheme } from './src/contexts/ThemeContext';
 
 const AuthStack = createStackNavigator<AuthStackParamList>();
 const MainStack = createStackNavigator<RootStackParamList>();
@@ -142,6 +144,7 @@ const AuthNavigator: React.FC = () => (
 // Main App Stack Navigator (for authenticated users)
 const MainNavigator: React.FC = () => {
   const { logout, user } = useAuth();
+  const { colors } = useTheme();
 
   const handleLogout = async () => {
     try {
@@ -186,31 +189,31 @@ const MainNavigator: React.FC = () => {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          height: 70,
+          backgroundColor: colors.surface + 'F0', // Dynamic background with transparency
+          height: 80,
           borderRadius: 35,
           marginHorizontal: 20,
-          marginBottom: 30,
+          marginBottom: 20, // Reduced margin
           position: 'absolute',
-          shadowColor: '#000',
+          shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.15,
+          shadowOpacity: 0.25,
           shadowRadius: 16,
           elevation: 12,
           borderWidth: 1,
-          borderColor: 'rgba(255, 255, 255, 0.3)',
-          paddingBottom: 10,
+          borderColor: colors.primary + '30', // Dynamic glow border
+          paddingBottom: 15,
           paddingTop: 10,
         },
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarActiveTintColor: colors.primary, // Dynamic primary color
+        tabBarInactiveTintColor: colors.textLight, // Dynamic inactive color
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '500',
-          marginTop: 2,
+          fontWeight: '600',
+          marginTop: 4,
         },
         tabBarIconStyle: {
-          marginTop: 5,
+          marginTop: 6,
         },
       }}
     >
@@ -420,17 +423,19 @@ const App: React.FC = () => {
   };
 
   return (
-    <AuthProvider>
-      <NavigationContainer linking={linking}>
-        <StatusBar 
-          barStyle="dark-content" 
-          backgroundColor="#ffffff" 
-          translucent={Platform.OS === 'android'}
-        />
-        <AppNavigator />
-        <Toast />
-      </NavigationContainer>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <NavigationContainer linking={linking}>
+          <StatusBar 
+            barStyle="dark-content" 
+            backgroundColor="#ffffff" 
+            translucent={Platform.OS === 'android'}
+          />
+          <AppNavigator />
+          <Toast />
+        </NavigationContainer>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

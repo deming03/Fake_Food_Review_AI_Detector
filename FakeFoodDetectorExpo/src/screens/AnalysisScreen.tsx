@@ -46,7 +46,7 @@ const AnalysisScreen: React.FC = () => {
   const navigation = useNavigation<AnalysisScreenNavigationProp>();
   const route = useRoute<AnalysisScreenRouteProp>();
   
-  const { restaurantUrl } = route.params;
+  const { restaurantUrl, restaurantName } = route.params;
 
   useEffect(() => {
     startAnalysis();
@@ -79,7 +79,7 @@ const AnalysisScreen: React.FC = () => {
       }
 
       // Get analysis result
-      const response = await apiClient.analyzeRestaurant(restaurantUrl);
+      const response = await apiClient.analyzeRestaurant(restaurantUrl, restaurantName);
       
       if (response.success && response.data) {
         const analysisData = response.data;

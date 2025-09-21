@@ -19,6 +19,8 @@ import { WebView } from 'react-native-webview';
 import { RootStackParamList } from '../types';
 import { parseGoogleMapsUrl, isValidUrl } from '../utils/helpers';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
+import apiClient from '../services/api';
 import { 
   AnimatedButton, 
   EnhancedTextInput, 
@@ -39,6 +41,7 @@ interface Restaurant {
   name: string;
   rating: number;
   address: string;
+  googleMapsUrl: string;
 }
 
 interface Location {
@@ -64,6 +67,7 @@ const HomeScreen: React.FC = () => {
   const [searchResults, setSearchResults] = useState<Restaurant[]>([]);
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { user, logout } = useAuth();
+  const { isDarkMode, toggleTheme, colors } = useTheme();
 
   const handleAnalyze = async () => {
     if (!restaurantUrl.trim()) {
@@ -138,6 +142,11 @@ const HomeScreen: React.FC = () => {
     );
   };
 
+  const handleToggleTheme = () => {
+    toggleTheme();
+    showToast.success(`Switched to ${!isDarkMode ? 'Dark' : 'Light'} Mode!`);
+  };
+
   const handleSearchRestaurants = async () => {
     if (!searchQuery.trim()) {
       showToast.error('Please enter a restaurant name');
@@ -146,16 +155,34 @@ const HomeScreen: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Mock search results - in real app, this would call Places API
-      const mockResults = [
-        { id: '1', name: `${searchQuery} - Downtown`, rating: 4.5, address: '123 Main St' },
-        { id: '2', name: `${searchQuery} - Mall`, rating: 4.2, address: '456 Oak Ave' },
-        { id: '3', name: `${searchQuery} - Uptown`, rating: 3.9, address: '789 Pine Rd' },
-      ];
-      setSearchResults(mockResults);
-      showToast.success(`Found ${mockResults.length} restaurants!`);
+      // Use the real API search function
+      const response = await apiClient.searchRestaurants(searchQuery);
+      
+      if (response.success && response.data) {
+        // Convert Restaurant[] to the format expected by the UI
+        const results = response.data.map(restaurant => ({
+          id: restaurant.id,
+          name: restaurant.name,
+          rating: 4.0, // Default rating for display
+          address: restaurant.address,
+          googleMapsUrl: restaurant.googleMapsUrl
+        }));
+        
+        setSearchResults(results);
+        
+        if (results.length > 0) {
+          showToast.success(`Found ${results.length} restaurant${results.length > 1 ? 's' : ''}!`);
+        } else {
+          showToast.info('No restaurants found. Try a different search term.');
+          setSearchResults([]);
+        }
+      } else {
+        throw new Error(response.error || 'Search failed');
+      }
     } catch (error) {
+      console.error('Search error:', error);
       showToast.error('Failed to search restaurants');
+      setSearchResults([]);
     } finally {
       setIsLoading(false);
     }
@@ -216,48 +243,42 @@ const HomeScreen: React.FC = () => {
   const recommendedRestaurants = [
     {
       id: 1,
-      name: "The Glass House",
-      rating: 4.9,
-      cuisine: "Fine Dining",
-      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=300&h=200&fit=crop",
-      reviews: 2840,
-      priceRange: "$$$$"
+      name: "Murni Discovery Bukit Jalil",
+      rating: 4.0,
+      cuisine: "Mamak • Local",
+      image: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=300&h=200&fit=crop&auto=format", // Naan and Indian food
+      reviews: 5451,
+      priceRange: "$$",
+      googleMapsUrl: "https://maps.google.com/place/Murni+Discovery+Bukit+Jalil"
     },
     {
       id: 2,
-      name: "Sakura Sushi",
-      rating: 4.8,
-      cuisine: "Japanese",
-      image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=300&h=200&fit=crop",
-      reviews: 1920,
-      priceRange: "$$$"
+      name: "Kin Thai Restaurant • OUG",
+      rating: 4.2,
+      cuisine: "Thai • Authentic",
+      image: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=300&h=200&fit=crop&auto=format", // Thai cuisine
+      reviews: 1287,
+      priceRange: "$$",
+      googleMapsUrl: "https://maps.google.com/place/Kin+Thai+Restaurant+OUG"
     },
     {
       id: 3,
-      name: "Villa Mediterranea",
-      rating: 4.7,
-      cuisine: "Italian",
-      image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=300&h=200&fit=crop",
-      reviews: 1560,
-      priceRange: "$$$"
-    },
-    {
-      id: 4,
-      name: "Dragon Palace",
-      rating: 4.6,
-      cuisine: "Chinese",
-      image: "https://images.unsplash.com/photo-1552566341-47946af4e8a2?w=300&h=200&fit=crop",
-      reviews: 2100,
-      priceRange: "$$"
+      name: "Restoran Nathan's Corner",
+      rating: 4.1,
+      cuisine: "Local • 24 Hours",
+      image: "https://images.unsplash.com/photo-1563379091339-03246963d96a?w=300&h=200&fit=crop&auto=format", // Malaysian local food
+      reviews: 892,
+      priceRange: "$",
+      googleMapsUrl: "https://maps.google.com/place/Restoran+Nathan+Corner"
     }
   ];
 
 
   return (
-    <View style={styles.mainContainer}>
+    <View style={[styles.mainContainer, { backgroundColor: colors.background }]}>
       {/* Header */}
       <LinearGradient
-        colors={[Colors.background, Colors.surface]}
+        colors={[colors.background, colors.surface]}
         style={styles.header}
       >
         <View style={styles.headerContent}>
@@ -265,27 +286,52 @@ const HomeScreen: React.FC = () => {
             <View style={styles.logoContainer}>
               <TruthBiteIcon size={32} variant="color" />
               <View style={styles.logoTextContainer}>
-                <Text style={styles.logoText}>TrustBite</Text>
-                <Text style={styles.logoSubtext}>AI-Powered Reviews</Text>
+                <Text style={[styles.logoText, { color: colors.primary }]}>TrustBite</Text>
+                <Text style={[styles.logoSubtext, { color: colors.textSecondary }]}>AI-Powered Reviews</Text>
               </View>
             </View>
           </View>
-          <TouchableOpacity 
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
-            <LinearGradient
-              colors={[Colors.accent, Colors.error]}
-              style={styles.logoutGradient}
+          
+          <View style={styles.headerButtons}>
+            {/* Dark Mode Toggle */}
+            <TouchableOpacity 
+              style={styles.themeToggleButton}
+              onPress={handleToggleTheme}
             >
-              <Ionicons name="log-out-outline" size={20} color="white" />
-              <Text style={styles.logoutText}>Sign Out</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+              <LinearGradient
+                colors={isDarkMode ? [colors.primary, colors.secondary] : [colors.accent, colors.primary]}
+                style={styles.themeToggleGradient}
+              >
+                <Ionicons 
+                  name={isDarkMode ? "sunny" : "moon"} 
+                  size={20} 
+                  color="white" 
+                />
+              </LinearGradient>
+            </TouchableOpacity>
+            
+            {/* Logout Button */}
+            <TouchableOpacity 
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <LinearGradient
+                colors={[colors.accent, colors.error]}
+                style={styles.logoutGradient}
+              >
+                <Ionicons name="log-out-outline" size={20} color="white" />
+                <Text style={styles.logoutText}>Sign Out</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </View>
       </LinearGradient>
 
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.container} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollViewContent}
+      >
         {/* Search Method Tabs - Now at the top */}
         <View style={styles.tabContainer}>
         <TouchableOpacity 
@@ -373,7 +419,14 @@ const HomeScreen: React.FC = () => {
                   <TouchableOpacity
                     key={restaurant.id}
                     style={styles.resultItem}
-                    onPress={() => showToast.info(`Selected: ${restaurant.name}`)}
+                    onPress={() => {
+                      showToast.success(`Selected: ${restaurant.name}`);
+                      // Navigate to analysis with the restaurant's Google Maps URL
+                      navigation.navigate('Analysis', { 
+                        restaurantUrl: restaurant.googleMapsUrl,
+                        restaurantName: restaurant.name 
+                      });
+                    }}
                   >
                     <View style={styles.resultInfo}>
                       <Text style={styles.resultName}>{restaurant.name}</Text>
@@ -709,20 +762,30 @@ const HomeScreen: React.FC = () => {
 
       {/* Recommended Restaurants Section - Now after search methods */}
       <View style={styles.recommendationSection}>
-        <Text style={styles.sectionTitle}>🌟 Top Rated Restaurants</Text>
-        <Text style={styles.sectionSubtitle}>Verified authentic dining experiences</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>🌟 Top Rated Restaurants</Text>
+        <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>Verified authentic dining experiences</Text>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
           style={styles.recommendationScrollView}
           contentContainerStyle={styles.recommendationScrollContent}
         >
-          {recommendedRestaurants.map((restaurant) => (
-            <Animatable.View 
-              key={restaurant.id} 
-              animation="fadeInRight" 
-              delay={restaurant.id * 100}
-              style={styles.recommendationCard}
+          {recommendedRestaurants.length > 0 ? recommendedRestaurants.map((restaurant) => (
+            <TouchableOpacity
+              key={restaurant.id}
+              activeOpacity={0.9}
+              style={[styles.recommendationCard, { 
+                backgroundColor: colors.surface,
+                borderColor: colors.cardBorder,
+                shadowColor: colors.shadow
+              }]}
+              onPress={() => {
+                showToast.success(`Selected: ${restaurant.name}`);
+                navigation.navigate('Analysis', { 
+                  restaurantUrl: restaurant.googleMapsUrl,
+                  restaurantName: restaurant.name 
+                });
+              }}
             >
               <ImageBackground 
                 source={{ uri: restaurant.image }}
@@ -747,11 +810,13 @@ const HomeScreen: React.FC = () => {
                   </View>
                 </LinearGradient>
               </ImageBackground>
-              <TouchableOpacity style={styles.cardAction}>
+              <View style={styles.cardAction}>
                 <Ionicons name="arrow-forward" size={16} color={Colors.primary} />
-              </TouchableOpacity>
-            </Animatable.View>
-          ))}
+              </View>
+            </TouchableOpacity>
+          )) : (
+            <Text style={{ color: Colors.textSecondary, padding: 20 }}>No restaurants available</Text>
+          )}
         </ScrollView>
       </View>
 
@@ -769,10 +834,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
+  scrollViewContent: {
+    paddingBottom: 200, // Extra space to prevent bottom nav blocking content
+  },
   // Recommendation Section Styles
   recommendationSection: {
     marginTop: 20,
-    marginBottom: 20,
+    marginBottom: 30,
+    minHeight: 200, // Ensure proper space allocation
   },
   sectionTitle: {
     fontSize: 22,
@@ -789,6 +858,7 @@ const styles = StyleSheet.create({
   },
   recommendationScrollView: {
     paddingLeft: 20,
+    minHeight: 160, // Ensure ScrollView has proper height
   },
   recommendationScrollContent: {
     paddingRight: 20,
@@ -799,14 +869,14 @@ const styles = StyleSheet.create({
     marginRight: 15,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surface, // This will be overridden inline
     elevation: 8,
     shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.cardBorder,
+    borderColor: Colors.cardBorder, // This will be overridden inline
   },
   cardImageBackground: {
     flex: 1,
@@ -1086,6 +1156,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textSecondary,
     marginTop: 2,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  themeToggleButton: {
+    borderRadius: 25,
+    overflow: 'hidden',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  themeToggleGradient: {
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   logoutButton: {
     borderRadius: 25,
