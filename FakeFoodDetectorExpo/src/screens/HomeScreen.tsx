@@ -10,7 +10,7 @@ import {
   ImageBackground,
   Image,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { SafeLinearGradient as LinearGradient } from '../components/SafeLinearGradient';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as Animatable from 'react-native-animatable';

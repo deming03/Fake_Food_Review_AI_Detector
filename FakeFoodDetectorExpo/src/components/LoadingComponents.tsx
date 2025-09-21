@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+// Removed react-native-skeleton-placeholder to avoid BVLinearGradient errors
 
 const { width } = Dimensions.get('window');
 
@@ -25,41 +25,37 @@ export const EnhancedProgressBar: React.FC<{ progress: number; label?: string }>
 // 🦴 Skeleton Screen for Restaurant Cards
 export const RestaurantCardSkeleton: React.FC = () => {
   return (
-    <SkeletonPlaceholder borderRadius={12}>
-      <View style={styles.skeletonCard}>
-        <View style={styles.skeletonImage} />
-        <View style={styles.skeletonContent}>
-          <View style={styles.skeletonTitle} />
-          <View style={styles.skeletonSubtitle} />
-          <View style={styles.skeletonRating} />
-        </View>
+    <View style={styles.skeletonCard}>
+      <View style={[styles.skeletonImage, styles.skeletonBg]} />
+      <View style={styles.skeletonContent}>
+        <View style={[styles.skeletonTitle, styles.skeletonBg]} />
+        <View style={[styles.skeletonSubtitle, styles.skeletonBg]} />
+        <View style={[styles.skeletonRating, styles.skeletonBg]} />
       </View>
-    </SkeletonPlaceholder>
+    </View>
   );
 };
 
 // 🦴 Skeleton Screen for Analysis Results
 export const AnalysisResultSkeleton: React.FC = () => {
   return (
-    <SkeletonPlaceholder borderRadius={12}>
-      <View style={styles.skeletonContainer}>
-        {/* Score Circle Skeleton */}
-        <View style={styles.skeletonCircle} />
-        
-        {/* Text Lines Skeleton */}
-        <View style={styles.skeletonTextContainer}>
-          <View style={styles.skeletonLongText} />
-          <View style={styles.skeletonMediumText} />
-          <View style={styles.skeletonShortText} />
-        </View>
-        
-        {/* Cards Skeleton */}
-        <View style={styles.skeletonCardsContainer}>
-          <View style={styles.skeletonSmallCard} />
-          <View style={styles.skeletonSmallCard} />
-        </View>
+    <View style={styles.skeletonContainer}>
+      {/* Score Circle Skeleton */}
+      <View style={[styles.skeletonCircle, styles.skeletonBg]} />
+      
+      {/* Text Lines Skeleton */}
+      <View style={styles.skeletonTextContainer}>
+        <View style={[styles.skeletonLongText, styles.skeletonBg]} />
+        <View style={[styles.skeletonMediumText, styles.skeletonBg]} />
+        <View style={[styles.skeletonShortText, styles.skeletonBg]} />
       </View>
-    </SkeletonPlaceholder>
+      
+      {/* Cards Skeleton */}
+      <View style={styles.skeletonCardsContainer}>
+        <View style={[styles.skeletonSmallCard, styles.skeletonBg]} />
+        <View style={[styles.skeletonSmallCard, styles.skeletonBg]} />
+      </View>
+    </View>
   );
 };
 
@@ -155,6 +151,9 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: 'white',
     borderRadius: 12,
+  },
+  skeletonBg: {
+    backgroundColor: '#EAEAEA',
   },
   skeletonImage: {
     width: 60,

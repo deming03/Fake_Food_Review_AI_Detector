@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-// Temporarily disable charts to fix BVLinearGradient error
-// import { LineChart, PieChart, BarChart, ProgressChart } from 'react-native-chart-kit';
+// Chart components using simple Views instead of problematic react-native-chart-kit
 import * as Animatable from 'react-native-animatable';
 import { Ionicons } from '@expo/vector-icons';
 

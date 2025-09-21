@@ -2,11 +2,11 @@ import axios from 'axios';
 import { Restaurant, AnalysisResult, ApiResponse } from '../types';
 import { delay } from '../utils/helpers';
 
-// AWS Lambda Function URL - Replace with actual URL from deployment
-const API_BASE_URL = 'https://ir7colijlggp7kfewxctd47pfq0cjmhq.lambda-url.ap-southeast-1.on.aws/'; // Will be updated
+// AWS Lambda Function URL - Updated with new URL from deployment  
+const API_BASE_URL = 'https://by2eglzfty5grr6f7ontmnch740fzsfp.lambda-url.ap-southeast-1.on.aws/'; // New URL with Bedrock permissions
 
-// Switch between mock and real backend
-const USE_MOCK_DATA = true; // Temporarily back to mock while debugging backend
+// Switch between mock and real backend  
+const USE_MOCK_DATA = false; // Now using real AWS Lambda backend with fresh credentials!
 
 // Create axios instance
 const httpClient = axios.create({
@@ -88,19 +88,13 @@ const apiClient = {
     }
 
     try {
-      // For Lambda Function URL, send the event format the Lambda expects
+      // Direct call to Lambda Function URL without envelope
       const response = await fetch(API_BASE_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          httpMethod: 'POST',
-          body: JSON.stringify({ googleMapsUrl }),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }),
+        body: JSON.stringify({ googleMapsUrl }),
       });
 
       if (!response.ok) {
@@ -120,7 +114,8 @@ const apiClient = {
       }
     } catch (error: any) {
       console.warn('Backend call failed, using mock data:', error.message);
-      // Fallback to mock data if backend fails
+      console.log('Trying real backend first, falling back to mock if needed');
+      // Fallback to mock data if backend fails (graceful degradation)
       await delay(3000);
       return {
         success: true,

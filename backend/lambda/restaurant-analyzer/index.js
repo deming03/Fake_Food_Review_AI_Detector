@@ -1,14 +1,19 @@
 const AWS = require('aws-sdk');
-const { v4: uuidv4 } = require('uuid');
 
-// 配置AWS服务
-const dynamodb = new AWS.DynamoDB.DocumentClient();
-const bedrock = new AWS.BedrockRuntime();
+// 配置AWS服务 - 按照黑客松区域要求
+// Bedrock 只在 US-east-1 和 SG 可用，根据黑客松指南
+const bedrock = new AWS.BedrockRuntime({
+    region: 'us-east-1' // 使用 us-east-1 确保 Bedrock 可用
+});
 
-// 环境变量
-const RESTAURANTS_TABLE = process.env.RESTAURANTS_TABLE || 'fake-food-detector-restaurants';
-const REVIEWS_TABLE = process.env.REVIEWS_TABLE || 'fake-food-detector-reviews';
-const ANALYSIS_TABLE = process.env.ANALYSIS_TABLE || 'fake-food-detector-analysis-results';
+// Simple UUID generator to avoid crypto import issues
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+        v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
 
 /**
  * 主Lambda函数 - 分析餐厅评论
@@ -24,8 +29,9 @@ exports.handler = async (event) => {
     };
     
     try {
-        // 处理CORS预检请求
-        if (event.httpMethod === 'OPTIONS') {
+        // 处理CORS预检请求（兼容 API Gateway v1/v2 与 Lambda Function URL）
+        const method = (event && event.httpMethod) || (event && event.requestContext && event.requestContext.http && event.requestContext.http.method);
+        if (method === 'OPTIONS') {
             return {
                 statusCode: 200,
                 headers,
@@ -62,11 +68,11 @@ exports.handler = async (event) => {
         }
         
         // 生成分析ID
-        const analysisId = uuidv4();
-        const restaurantId = uuidv4();
+        const analysisId = generateUUID();
+        const restaurantId = generateUUID();
         
-        // 1. 保存餐厅信息
-        await saveRestaurantInfo(restaurantId, restaurantInfo);
+        // 1. Skip saving restaurant info for now (testing mode)
+        console.log('Processing restaurant:', restaurantInfo);
         
         // 2. 爬取评论 (模拟数据)
         const reviews = await scrapeReviews(googleMapsUrl);
@@ -74,7 +80,7 @@ exports.handler = async (event) => {
         // 3. AI分析评论真实性
         const analysisResult = await analyzeReviews(reviews, restaurantId);
         
-        // 4. 保存分析结果
+        // 4. Return result without saving to DynamoDB (testing mode)
         const finalResult = {
             id: analysisId,
             restaurantId,
@@ -90,7 +96,7 @@ exports.handler = async (event) => {
             }))
         };
         
-        await saveAnalysisResult(analysisId, finalResult);
+        console.log('Analysis completed successfully');
         
         return {
             statusCode: 200,
@@ -157,22 +163,12 @@ function parseGoogleMapsUrl(url) {
 }
 
 /**
- * 保存餐厅信息到DynamoDB
+ * 保存餐厅信息到DynamoDB (暂时禁用以用于测试)
  */
 async function saveRestaurantInfo(restaurantId, restaurantInfo) {
-    const params = {
-        TableName: RESTAURANTS_TABLE,
-        Item: {
-            restaurant_id: restaurantId,
-            name: restaurantInfo.name,
-            address: restaurantInfo.address,
-            place_id: restaurantInfo.placeId,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        }
-    };
-    
-    await dynamodb.put(params).promise();
+    console.log('DynamoDB save skipped for testing:', restaurantId, restaurantInfo);
+    // Temporarily disabled for testing
+    return Promise.resolve();
 }
 
 /**
@@ -343,18 +339,14 @@ Response format:
 }`;
 
         const params = {
-            modelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
+            modelId: 'meta.llama3-1-70b-instruct-v1:0', // Using LLAMA 3.1 70B as requested
             contentType: 'application/json',
             accept: 'application/json',
             body: JSON.stringify({
-                anthropic_version: 'bedrock-2023-05-31',
-                max_tokens: 2000,
-                messages: [
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ]
+                prompt: `<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n${prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n`,
+                max_gen_len: 2000,
+                temperature: 0.1,
+                top_p: 0.9
             })
         };
 
@@ -366,10 +358,15 @@ Response format:
         const response = await bedrock.invokeModel(command).promise();
         const responseBody = JSON.parse(Buffer.from(response.body).toString());
         
-        if (responseBody.content && responseBody.content[0]) {
-            const aiResponse = JSON.parse(responseBody.content[0].text);
-            console.log('Bedrock AI analysis successful:', aiResponse.reasoning);
-            return aiResponse;
+        if (responseBody.generation) {
+            // Parse LLAMA response - extract JSON from the generated text
+            const generatedText = responseBody.generation;
+            const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                const aiResponse = JSON.parse(jsonMatch[0]);
+                console.log('Bedrock LLAMA analysis successful:', aiResponse.reasoning);
+                return aiResponse;
+            }
         }
         
         throw new Error('Invalid Bedrock response format');
@@ -381,42 +378,10 @@ Response format:
 }
 
 /**
- * 保存分析结果
+ * 保存分析结果 (暂时禁用以用于测试)
  */
 async function saveAnalysisResult(analysisId, result) {
-    const params = {
-        TableName: ANALYSIS_TABLE,
-        Item: {
-            analysis_id: analysisId,
-            restaurant_id: result.restaurantId,
-            credibility_score: result.credibilityScore,
-            total_reviews_analyzed: result.totalReviewsAnalyzed,
-            fake_reviews_detected: result.fakeReviewsDetected,
-            suspicious_patterns: result.suspiciousPatterns,
-            created_at: result.analysisDate,
-            analysis_data: result
-        }
-    };
-    
-    await dynamodb.put(params).promise();
-    
-    // 同时保存评论数据
-    for (const review of result.reviews) {
-        const reviewParams = {
-            TableName: REVIEWS_TABLE,
-            Item: {
-                review_id: review.id,
-                restaurant_id: result.restaurantId,
-                analysis_id: analysisId,
-                author: review.author,
-                rating: review.rating,
-                text: review.text,
-                date: review.date,
-                is_detected_as_fake: review.isDetectedAsFake,
-                fake_score: review.fakeScore,
-                created_at: new Date().toISOString()
-            }
-        };
-        await dynamodb.put(reviewParams).promise();
-    }
+    console.log('DynamoDB save skipped for testing. Analysis ID:', analysisId);
+    // Temporarily disabled for testing
+    return Promise.resolve();
 }
