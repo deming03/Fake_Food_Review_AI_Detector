@@ -4,22 +4,26 @@ import * as Animatable from 'react-native-animatable';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 
-// 🎨 Enhanced Color Palette
+// 🎨 High-Tech Color Palette
 export const Colors = {
-  primary: '#FF6B35',
-  primaryLight: '#FF8A65',
-  primaryDark: '#E64A19',
-  secondary: '#2196F3',
-  secondaryLight: '#64B5F6',
-  success: '#4CAF50',
-  warning: '#FF9800',
-  error: '#F44336',
-  background: '#F8F9FA',
-  surface: '#FFFFFF',
-  text: '#212121',
-  textSecondary: '#757575',
-  textLight: '#BDBDBD',
-  shadow: 'rgba(0, 0, 0, 0.1)',
+  primary: '#00D9FF',      // Electric cyan
+  primaryLight: '#33E1FF',
+  primaryDark: '#00BFE6',
+  secondary: '#7C3AED',    // Purple tech
+  secondaryLight: '#A78BFA',
+  accent: '#FF0080',       // Neon pink
+  success: '#00E676',      // Electric green
+  warning: '#FFB300',
+  error: '#FF1744',
+  background: '#0A0B0F',   // Dark tech background
+  surface: '#1A1D23',     // Dark surface
+  surfaceLight: '#252932', // Lighter surface
+  text: '#FFFFFF',         // White text
+  textSecondary: '#A0A8B8', // Light gray
+  textLight: '#6B7280',    // Dimmed text
+  shadow: 'rgba(0, 0, 0, 0.4)',
+  cardBorder: '#2D3748',   // Subtle border
+  glow: 'rgba(0, 217, 255, 0.3)', // Cyan glow
 };
 
 // 🎭 Animated Button Component
@@ -313,13 +317,13 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   textInput: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceLight,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: Colors.cardBorder,
     color: Colors.text,
   },
   textInputWithIcon: {
@@ -338,9 +342,11 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
   },
   highlightedCard: {
     borderLeftWidth: 4,

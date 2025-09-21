@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar, Platform, Linking, View, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 
 // Authentication
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
-import { DrawerProvider, useDrawer } from './src/contexts/DrawerContext';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
@@ -22,10 +22,10 @@ import SettingsScreen from './src/screens/SettingsScreen';
 
 import { RootStackParamList, AuthStackParamList } from './src/types';
 import { Colors, showToast } from './src/components/EnhancedUI';
-import SideDrawer from './src/components/SideDrawer';
 
 const AuthStack = createStackNavigator<AuthStackParamList>();
 const MainStack = createStackNavigator<RootStackParamList>();
+const BottomTab = createBottomTabNavigator();
 
 // URL configuration for deep linking
 const prefix = 'truthbite://';
@@ -142,7 +142,6 @@ const AuthNavigator: React.FC = () => (
 // Main App Stack Navigator (for authenticated users)
 const MainNavigator: React.FC = () => {
   const { logout, user } = useAuth();
-  const { isDrawerVisible, openDrawer, closeDrawer } = useDrawer();
 
   const handleLogout = async () => {
     try {
@@ -154,30 +153,6 @@ const MainNavigator: React.FC = () => {
     }
   };
 
-  const MenuButton = () => (
-    <TouchableOpacity 
-      style={{ 
-        marginLeft: 15, 
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 25,
-        backgroundColor: '#FF6B35',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-        minWidth: 44,
-        minHeight: 44,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-      onPress={openDrawer}
-      activeOpacity={0.8}
-    >
-      <Ionicons name="menu" size={24} color="white" />
-    </TouchableOpacity>
-  );
 
   const LogoutButton = () => (
     <TouchableOpacity 
@@ -205,11 +180,98 @@ const MainNavigator: React.FC = () => {
   );
 
 
+  // Bottom Tab Navigator for main screens
+  const BottomTabNavigator = () => (
+    <BottomTab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          height: 70,
+          borderRadius: 35,
+          marginHorizontal: 20,
+          marginBottom: 30,
+          position: 'absolute',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.15,
+          shadowRadius: 16,
+          elevation: 12,
+          borderWidth: 1,
+          borderColor: 'rgba(255, 255, 255, 0.3)',
+          paddingBottom: 10,
+          paddingTop: 10,
+        },
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '500',
+          marginTop: 2,
+        },
+        tabBarIconStyle: {
+          marginTop: 5,
+        },
+      }}
+    >
+      <BottomTab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <BottomTab.Screen
+        name="History"
+        component={HistoryScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="time-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <BottomTab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <BottomTab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="settings-outline" size={size} color={color} />
+          ),
+        }}
+      />
+    </BottomTab.Navigator>
+  );
+
   return (
-    <>
-      <MainStack.Navigator
-        initialRouteName="Home"
-        screenOptions={{
+    <MainStack.Navigator
+      initialRouteName="MainTabs"
+      screenOptions={{
+        headerShown: false,
+        cardStyle: { backgroundColor: '#f5f5f5' },
+      }}
+    >
+      <MainStack.Screen 
+        name="MainTabs" 
+        component={BottomTabNavigator}
+        options={{ headerShown: false }}
+      />
+      <MainStack.Screen 
+        name="Analysis" 
+        component={AnalysisScreen}
+        options={{
+          headerShown: true,
+          title: 'Revealing Truth...',
           headerStyle: {
             backgroundColor: '#ffffff',
             elevation: 2,
@@ -222,85 +284,34 @@ const MainNavigator: React.FC = () => {
             fontWeight: '600',
             fontSize: 18,
           },
-          headerBackTitle: '',
-          cardStyle: { backgroundColor: '#f5f5f5' },
-          headerLeft: () => <MenuButton />,
           headerRight: () => <LogoutButton />,
         }}
-      >
-    <MainStack.Screen 
-      name="Home" 
-      component={HomeScreen}
-      options={{
-        title: 'TRUTH BITE',
-        headerStyle: {
-          backgroundColor: '#FF6B35',
-        },
-        headerTintColor: '#ffffff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-          fontSize: 20,
-        },
-      }}
-    />
-    <MainStack.Screen 
-      name="Analysis" 
-      component={AnalysisScreen}
-      options={{
-        title: 'Revealing Truth...',
-        headerLeft: () => null,
-      }}
-    />
-    <MainStack.Screen 
-      name="Results" 
-      component={ResultsScreen}
-      options={{
-        title: 'Truth Report',
-        headerLeft: () => null,
-      }}
-    />
-    <MainStack.Screen 
-      name="History" 
-      component={HistoryScreen}
-      options={{
-        title: 'Analysis History',
-      }}
-    />
-    <MainStack.Screen 
-      name="Profile" 
-      component={ProfileScreen}
-      options={{
-        title: 'Profile',
-      }}
-    />
-    <MainStack.Screen 
-      name="Settings" 
-      component={SettingsScreen}
-      options={{
-        title: 'Settings',
-      }}
-    />
-  </MainStack.Navigator>
-  
-  {/* Side Drawer */}
-  <NavigationAwareDrawer />
-    </>
+      />
+      <MainStack.Screen 
+        name="Results" 
+        component={ResultsScreen}
+        options={{
+          headerShown: true,
+          title: 'Truth Report',
+          headerStyle: {
+            backgroundColor: '#ffffff',
+            elevation: 2,
+            shadowOpacity: 0.1,
+            shadowOffset: { width: 0, height: 2 },
+            shadowRadius: 4,
+          },
+          headerTintColor: '#333333',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
+          headerRight: () => <LogoutButton />,
+        }}
+      />
+    </MainStack.Navigator>
   );
 };
 
-// Navigation Aware Drawer Component
-const NavigationAwareDrawer: React.FC = () => {
-  const navigation = useNavigation();
-  const { isDrawerVisible, closeDrawer } = useDrawer();
-  
-  return (
-    <SideDrawer
-      isVisible={isDrawerVisible}
-      onClose={closeDrawer}
-      navigation={navigation}
-    />
-  );
-};
 
 // Main App Navigation Component (handles auth state)
 const AppNavigator: React.FC = () => {
@@ -410,17 +421,15 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
-      <DrawerProvider>
-        <NavigationContainer linking={linking}>
-          <StatusBar 
-            barStyle="dark-content" 
-            backgroundColor="#ffffff" 
-            translucent={Platform.OS === 'android'}
-          />
-          <AppNavigator />
-          <Toast />
-        </NavigationContainer>
-      </DrawerProvider>
+      <NavigationContainer linking={linking}>
+        <StatusBar 
+          barStyle="dark-content" 
+          backgroundColor="#ffffff" 
+          translucent={Platform.OS === 'android'}
+        />
+        <AppNavigator />
+        <Toast />
+      </NavigationContainer>
     </AuthProvider>
   );
 };

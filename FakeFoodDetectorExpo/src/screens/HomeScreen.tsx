@@ -7,7 +7,10 @@ import {
   Alert,
   TouchableOpacity,
   ScrollView,
+  ImageBackground,
+  Image,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as Animatable from 'react-native-animatable';
@@ -25,7 +28,7 @@ import {
   showToast
 } from '../components/EnhancedUI';
 import { RefreshableScrollView } from '../components/InteractiveComponents';
-import { TruthBiteLogo } from '../components/TruthBiteLogo';
+import { TruthBiteIcon } from '../components/TruthBiteLogo';
 
 const { width } = Dimensions.get('window');
 
@@ -210,16 +213,81 @@ const HomeScreen: React.FC = () => {
     }
   };
 
-  return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Welcome Header */}
-      <Animatable.View animation="fadeInDown" style={styles.welcomeHeader}>
-        <Text style={styles.welcomeText}>Welcome back, {user?.name || 'User'}! 👋</Text>
-        <Text style={styles.subtitleText}>Find and analyze restaurants with AI</Text>
-      </Animatable.View>
+  const recommendedRestaurants = [
+    {
+      id: 1,
+      name: "The Glass House",
+      rating: 4.9,
+      cuisine: "Fine Dining",
+      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=300&h=200&fit=crop",
+      reviews: 2840,
+      priceRange: "$$$$"
+    },
+    {
+      id: 2,
+      name: "Sakura Sushi",
+      rating: 4.8,
+      cuisine: "Japanese",
+      image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=300&h=200&fit=crop",
+      reviews: 1920,
+      priceRange: "$$$"
+    },
+    {
+      id: 3,
+      name: "Villa Mediterranea",
+      rating: 4.7,
+      cuisine: "Italian",
+      image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=300&h=200&fit=crop",
+      reviews: 1560,
+      priceRange: "$$$"
+    },
+    {
+      id: 4,
+      name: "Dragon Palace",
+      rating: 4.6,
+      cuisine: "Chinese",
+      image: "https://images.unsplash.com/photo-1552566341-47946af4e8a2?w=300&h=200&fit=crop",
+      reviews: 2100,
+      priceRange: "$$"
+    }
+  ];
 
-      {/* Search Method Tabs */}
-      <View style={styles.tabContainer}>
+
+  return (
+    <View style={styles.mainContainer}>
+      {/* Header */}
+      <LinearGradient
+        colors={[Colors.background, Colors.surface]}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <View style={styles.logoSection}>
+            <View style={styles.logoContainer}>
+              <TruthBiteIcon size={32} variant="color" />
+              <View style={styles.logoTextContainer}>
+                <Text style={styles.logoText}>TrustBite</Text>
+                <Text style={styles.logoSubtext}>AI-Powered Reviews</Text>
+              </View>
+            </View>
+          </View>
+          <TouchableOpacity 
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <LinearGradient
+              colors={[Colors.accent, Colors.error]}
+              style={styles.logoutGradient}
+            >
+              <Ionicons name="log-out-outline" size={20} color="white" />
+              <Text style={styles.logoutText}>Sign Out</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Search Method Tabs - Now at the top */}
+        <View style={styles.tabContainer}>
         <TouchableOpacity 
           style={[styles.tab, activeTab === 'link' && styles.activeTab]}
           onPress={() => setActiveTab('link')}
@@ -628,7 +696,7 @@ const HomeScreen: React.FC = () => {
         )}
       </Animatable.View>
 
-      {/* Analysis Button */}
+      {/* Analysis Button - Stick with search function */}
       <View style={styles.analysisSection}>
         <AnimatedButton
           title="🔍 Analyze Restaurant"
@@ -639,74 +707,215 @@ const HomeScreen: React.FC = () => {
         />
       </View>
 
-      {/* Quick Actions */}
-      <View style={styles.quickActionsSection}>
-        <View style={styles.quickActions}>
-          <AnimatedButton
-            title="Analysis History"
-            onPress={handleOpenHistory}
-            variant="outline"
-            icon="time-outline"
-          />
-          <AnimatedButton
-            title="How to Use"
-            onPress={handleHowToUse}
-            variant="outline"
-            icon="help-circle-outline"
-          />
-        </View>
+      {/* Recommended Restaurants Section - Now after search methods */}
+      <View style={styles.recommendationSection}>
+        <Text style={styles.sectionTitle}>🌟 Top Rated Restaurants</Text>
+        <Text style={styles.sectionSubtitle}>Verified authentic dining experiences</Text>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.recommendationScrollView}
+          contentContainerStyle={styles.recommendationScrollContent}
+        >
+          {recommendedRestaurants.map((restaurant) => (
+            <Animatable.View 
+              key={restaurant.id} 
+              animation="fadeInRight" 
+              delay={restaurant.id * 100}
+              style={styles.recommendationCard}
+            >
+              <ImageBackground 
+                source={{ uri: restaurant.image }}
+                style={styles.cardImageBackground}
+                imageStyle={styles.cardImage}
+              >
+                <LinearGradient
+                  colors={['transparent', 'rgba(0,0,0,0.8)']}
+                  style={styles.cardGradient}
+                >
+                  <View style={styles.cardContent}>
+                    <View style={styles.cardHeader}>
+                      <View style={styles.ratingBadge}>
+                        <Ionicons name="star" size={14} color="#FFD700" />
+                        <Text style={styles.ratingText}>{restaurant.rating}</Text>
+                      </View>
+                      <Text style={styles.priceText}>{restaurant.priceRange}</Text>
+                    </View>
+                    <Text style={styles.restaurantName}>{restaurant.name}</Text>
+                    <Text style={styles.cuisineType}>{restaurant.cuisine}</Text>
+                    <Text style={styles.reviewCount}>{restaurant.reviews.toLocaleString()} reviews</Text>
+                  </View>
+                </LinearGradient>
+              </ImageBackground>
+              <TouchableOpacity style={styles.cardAction}>
+                <Ionicons name="arrow-forward" size={16} color={Colors.primary} />
+              </TouchableOpacity>
+            </Animatable.View>
+          ))}
+        </ScrollView>
       </View>
-    </ScrollView>
+
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  mainContainer: {
     flex: 1,
     backgroundColor: Colors.background,
   },
-  welcomeHeader: {
-    padding: 20,
-    paddingTop: 10,
-    alignItems: 'center',
+  container: {
+    flex: 1,
+    backgroundColor: 'transparent',
   },
-  welcomeText: {
-    fontSize: 24,
+  // Recommendation Section Styles
+  recommendationSection: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
     color: Colors.text,
-    textAlign: 'center',
+    paddingHorizontal: 20,
     marginBottom: 5,
   },
-  subtitleText: {
-    fontSize: 16,
+  sectionSubtitle: {
+    fontSize: 14,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+  recommendationScrollView: {
+    paddingLeft: 20,
+  },
+  recommendationScrollContent: {
+    paddingRight: 20,
+  },
+  recommendationCard: {
+    width: 280,
+    height: 160,
+    marginRight: 15,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: Colors.surface,
+    elevation: 8,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
+  },
+  cardImageBackground: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  cardImage: {
+    borderRadius: 16,
+  },
+  cardGradient: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    padding: 15,
+  },
+  cardContent: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  ratingText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginLeft: 4,
+  },
+  priceText: {
+    color: '#4ADE80',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  restaurantName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 2,
+  },
+  cuisineType: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 4,
+  },
+  reviewCount: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.6)',
+  },
+  cardAction: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // Search Content Styles (updated for tech theme)
+  searchContent: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
   tabContainer: {
     flexDirection: 'row',
     marginHorizontal: 20,
+    marginTop: 20,
     marginBottom: 20,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 25,
-    padding: 4,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 6,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
   },
   tab: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 20,
-    gap: 6,
+    borderRadius: 12,
+    gap: 8,
   },
   activeTab: {
     backgroundColor: Colors.primary,
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
   },
   tabText: {
     fontSize: 14,
@@ -716,17 +925,9 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: 'white',
   },
-  searchContent: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-  },
   inputActions: {
     marginTop: 15,
     alignItems: 'center',
-  },
-  analysisSection: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
   },
   searchResults: {
     marginTop: 20,
@@ -741,17 +942,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: Colors.surfaceLight,
     borderRadius: 12,
     padding: 15,
     marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: '#f0f0f0',
+    borderColor: Colors.cardBorder,
   },
   resultInfo: {
     flex: 1,
@@ -770,11 +971,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-  },
-  ratingText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
   },
   mapContainer: {
     marginTop: 15,
@@ -806,10 +1002,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     gap: 6,
     padding: 8,
-    backgroundColor: '#e8f4fd',
+    backgroundColor: Colors.surfaceLight,
     borderRadius: 6,
     borderLeftWidth: 3,
     borderLeftColor: Colors.primary,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
   },
   mapInstructionsText: {
     fontSize: 12,
@@ -823,19 +1021,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
     gap: 8,
     padding: 12,
-    backgroundColor: '#e8f5e8',
+    backgroundColor: Colors.surfaceLight,
     borderRadius: 8,
     borderLeftWidth: 3,
     borderLeftColor: Colors.success,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
   },
   locationDetails: {
     flex: 1,
-  },
-  restaurantName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 2,
   },
   restaurantType: {
     fontSize: 14,
@@ -853,14 +1047,66 @@ const styles = StyleSheet.create({
   clearLocationButton: {
     padding: 4,
   },
-  quickActionsSection: {
+  analysisSection: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    marginBottom: 20,
   },
-  quickActions: {
+  // Header Styles
+  header: {
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.cardBorder,
+  },
+  headerContent: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    gap: 12,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  logoSection: {
+    flex: 1,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoTextContainer: {
+    marginLeft: 12,
+  },
+  logoText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    textShadowColor: Colors.glow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+  logoSubtext: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  logoutButton: {
+    borderRadius: 25,
+    overflow: 'hidden',
+    shadowColor: Colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  logoutGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 6,
+  },
+  logoutText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

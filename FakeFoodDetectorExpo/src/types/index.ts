@@ -43,6 +43,7 @@ export type AuthStackParamList = {
 
 // Main App Stack (authenticated users)
 export type RootStackParamList = {
+  MainTabs: undefined;
   Home: undefined;
   Analysis: {
     restaurantUrl: string;
