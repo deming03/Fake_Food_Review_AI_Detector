@@ -15,17 +15,22 @@ export interface Review {
   helpfulCount?: number;
   isDetectedAsFake?: boolean;
   fakeScore?: number;
+  detectionReason?: string;
 }
 
 export interface AnalysisResult {
   id: string;
   restaurantId: string;
+  restaurantName?: string;
+  restaurantAddress?: string;
+  originalRating?: number;
   credibilityScore: number;
   totalReviewsAnalyzed: number;
   fakeReviewsDetected: number;
   suspiciousPatterns: string[];
   analysisDate: string;
   reviews: Review[];
+  keyInsights?: string[];
 }
 
 export interface ApiResponse<T> {
