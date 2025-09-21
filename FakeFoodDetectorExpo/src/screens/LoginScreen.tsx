@@ -9,10 +9,14 @@ import {
   Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import * as Animatable from 'react-native-animatable';
 import { useAuth } from '../contexts/AuthContext';
 import { TruthBiteLogo } from '../components/TruthBiteLogo';
 import { Colors, AnimatedButton, EnhancedTextInput, showToast } from '../components/EnhancedUI';
+import { AuthStackParamList } from '../types';
+
+type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -21,25 +25,25 @@ export default function LoginScreen() {
   const [googleLoading, setGoogleLoading] = useState(false);
   
   const { login, loginWithGoogle } = useAuth();
-  const navigation = useNavigation();
+  const navigation = useNavigation<LoginScreenNavigationProp>();
 
   const handleEmailLogin = async () => {
     if (!email || !password) {
-      showToast('Please fill in all fields', 'error');
+      showToast.error('Please fill in all fields');
       return;
     }
 
     if (!email.includes('@')) {
-      showToast('Please enter a valid email', 'error');
+      showToast.error('Please enter a valid email');
       return;
     }
 
     setLoading(true);
     try {
       await login(email, password);
-      showToast('Welcome back to TRUTH BITE!', 'success');
+      showToast.success('Welcome back to TRUTH BITE!');
     } catch (error: any) {
-      showToast(error.message || 'Login failed', 'error');
+      showToast.error(error.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -49,16 +53,20 @@ export default function LoginScreen() {
     setGoogleLoading(true);
     try {
       await loginWithGoogle();
-      showToast('Welcome to TRUTH BITE!', 'success');
+      showToast.success('Welcome to TRUTH BITE!');
     } catch (error: any) {
-      showToast(error.message || 'Google login failed', 'error');
+      showToast.error(error.message || 'Google login failed');
     } finally {
       setGoogleLoading(false);
     }
   };
 
   const navigateToRegister = () => {
-    navigation.navigate('Register' as never);
+    navigation.navigate('Register');
+  };
+
+  const navigateToForgotPassword = () => {
+    navigation.navigate('ForgotPassword');
   };
 
   return (
@@ -86,9 +94,6 @@ export default function LoginScreen() {
               placeholder="Enter your email"
               value={email}
               onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
               icon="mail"
             />
           </View>
@@ -100,13 +105,12 @@ export default function LoginScreen() {
               placeholder="Enter your password"
               value={password}
               onChangeText={setPassword}
-              secureTextEntry
               icon="lock-closed"
             />
           </View>
 
           {/* Forgot Password Link */}
-          <TouchableOpacity style={styles.forgotPassword}>
+          <TouchableOpacity style={styles.forgotPassword} onPress={navigateToForgotPassword}>
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
 
@@ -115,7 +119,6 @@ export default function LoginScreen() {
             title="Sign In"
             onPress={handleEmailLogin}
             loading={loading}
-            style={styles.loginButton}
             variant="primary"
           />
 
@@ -131,7 +134,6 @@ export default function LoginScreen() {
             title="Continue with Google"
             onPress={handleGoogleLogin}
             loading={googleLoading}
-            style={styles.googleButton}
             variant="secondary"
             icon="logo-google"
           />
@@ -215,7 +217,7 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: Colors.border,
+    backgroundColor: '#E5E5E5',
   },
   dividerText: {
     marginHorizontal: 20,
@@ -227,7 +229,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E5E5E5',
   },
   registerSection: {
     flexDirection: 'row',

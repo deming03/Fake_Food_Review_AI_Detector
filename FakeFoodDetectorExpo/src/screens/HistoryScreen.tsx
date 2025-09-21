@@ -12,7 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList, AnalysisResult } from '../types';
-import { restaurantApi } from '../services/api';
+import apiClient from '../services/api';
 import { getCredibilityColor, getCredibilityDescription, formatDate } from '../utils/helpers';
 
 type HistoryScreenNavigationProp = StackNavigationProp<RootStackParamList, 'History'>;
@@ -29,7 +29,7 @@ const HistoryScreen: React.FC = () => {
 
   const loadHistory = async () => {
     try {
-      const response = await restaurantApi.getAnalysisHistory();
+      const response = await apiClient.getAnalysisHistory();
       if (response.success && response.data) {
         setAnalysisHistory(response.data);
       } else {

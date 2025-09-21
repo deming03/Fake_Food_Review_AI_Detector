@@ -14,6 +14,10 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "permissions": [
+      "ACCESS_COARSE_LOCATION",
+      "ACCESS_FINE_LOCATION"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.truthbite.app",
@@ -26,7 +30,9 @@
             "CFBundleURLName": "truth-bite",
             "CFBundleURLSchemes": ["truthbite"]
           }
-        ]
+        ],
+        "NSLocationWhenInUseUsageDescription": "This app needs location access to show restaurants near you on the map.",
+        "NSLocationAlwaysUsageDescription": "This app needs location access to show restaurants near you on the map."
       }
     },
     "android": {
@@ -35,6 +41,10 @@
         "backgroundColor": "#FF6B35"
       },
       "package": "com.truthbite.app",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
       "intentFilters": [
         {
           "action": "VIEW",

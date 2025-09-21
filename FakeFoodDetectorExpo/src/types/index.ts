@@ -38,6 +38,7 @@ export interface ApiResponse<T> {
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
+  ForgotPassword: undefined;
 };
 
 // Main App Stack (authenticated users)
@@ -45,6 +46,11 @@ export type RootStackParamList = {
   Home: undefined;
   Analysis: {
     restaurantUrl: string;
+    restaurantName?: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
   };
   Results: {
     analysisResult: AnalysisResult;

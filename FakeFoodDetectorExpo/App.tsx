@@ -1,24 +1,28 @@
 import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { StatusBar, Platform, Linking, View, ActivityIndicator, Text } from 'react-native';
+import { StatusBar, Platform, Linking, View, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 
 // Authentication
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+import { DrawerProvider, useDrawer } from './src/contexts/DrawerContext';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
+import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 
 // Main App Screens
-import HomeScreen from './src/screens/EnhancedHomeScreen';
-import AnalysisScreen from './src/screens/EnhancedAnalysisScreen';
+import HomeScreen from './src/screens/HomeScreen';
+import AnalysisScreen from './src/screens/AnalysisScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
 import { RootStackParamList, AuthStackParamList } from './src/types';
-import { Colors } from './src/components/EnhancedUI';
+import { Colors, showToast } from './src/components/EnhancedUI';
+import SideDrawer from './src/components/SideDrawer';
 
 const AuthStack = createStackNavigator<AuthStackParamList>();
 const MainStack = createStackNavigator<RootStackParamList>();
@@ -131,30 +135,99 @@ const AuthNavigator: React.FC = () => (
   >
     <AuthStack.Screen name="Login" component={LoginScreen} />
     <AuthStack.Screen name="Register" component={RegisterScreen} />
+    <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
   </AuthStack.Navigator>
 );
 
 // Main App Stack Navigator (for authenticated users)
-const MainNavigator: React.FC = () => (
-  <MainStack.Navigator
-    initialRouteName="Home"
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: '#ffffff',
-        elevation: 2,
-        shadowOpacity: 0.1,
+const MainNavigator: React.FC = () => {
+  const { logout, user } = useAuth();
+  const { isDrawerVisible, openDrawer, closeDrawer } = useDrawer();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      showToast.success('Successfully signed out!');
+    } catch (error) {
+      console.error('Logout error:', error);
+      showToast.error('Failed to sign out');
+    }
+  };
+
+  const MenuButton = () => (
+    <TouchableOpacity 
+      style={{ 
+        marginLeft: 15, 
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 25,
+        backgroundColor: '#FF6B35',
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 4,
-      },
-      headerTintColor: '#333333',
-      headerTitleStyle: {
-        fontWeight: '600',
-        fontSize: 18,
-      },
-      headerBackTitle: '',
-      cardStyle: { backgroundColor: '#f5f5f5' },
-    }}
-  >
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+        minWidth: 44,
+        minHeight: 44,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+      onPress={openDrawer}
+      activeOpacity={0.8}
+    >
+      <Ionicons name="menu" size={24} color="white" />
+    </TouchableOpacity>
+  );
+
+  const LogoutButton = () => (
+    <TouchableOpacity 
+      style={{ 
+        marginRight: 15, 
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 25,
+        backgroundColor: '#FF6B35',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+        minWidth: 44,
+        minHeight: 44,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+      onPress={handleLogout}
+      activeOpacity={0.8}
+    >
+      <Ionicons name="log-out-outline" size={20} color="white" />
+    </TouchableOpacity>
+  );
+
+
+  return (
+    <>
+      <MainStack.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#ffffff',
+            elevation: 2,
+            shadowOpacity: 0.1,
+            shadowOffset: { width: 0, height: 2 },
+            shadowRadius: 4,
+          },
+          headerTintColor: '#333333',
+          headerTitleStyle: {
+            fontWeight: '600',
+            fontSize: 18,
+          },
+          headerBackTitle: '',
+          cardStyle: { backgroundColor: '#f5f5f5' },
+          headerLeft: () => <MenuButton />,
+          headerRight: () => <LogoutButton />,
+        }}
+      >
     <MainStack.Screen 
       name="Home" 
       component={HomeScreen}
@@ -208,7 +281,26 @@ const MainNavigator: React.FC = () => (
       }}
     />
   </MainStack.Navigator>
-);
+  
+  {/* Side Drawer */}
+  <NavigationAwareDrawer />
+    </>
+  );
+};
+
+// Navigation Aware Drawer Component
+const NavigationAwareDrawer: React.FC = () => {
+  const navigation = useNavigation();
+  const { isDrawerVisible, closeDrawer } = useDrawer();
+  
+  return (
+    <SideDrawer
+      isVisible={isDrawerVisible}
+      onClose={closeDrawer}
+      navigation={navigation}
+    />
+  );
+};
 
 // Main App Navigation Component (handles auth state)
 const AppNavigator: React.FC = () => {
@@ -305,6 +397,7 @@ const App: React.FC = () => {
       screens: {
         Login: 'login',
         Register: 'register',
+        ForgotPassword: 'forgot-password',
         Home: '',
         Analysis: 'analyze',
         Results: 'results',
@@ -317,15 +410,17 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
-      <NavigationContainer linking={linking}>
-        <StatusBar 
-          barStyle="dark-content" 
-          backgroundColor="#ffffff" 
-          translucent={Platform.OS === 'android'}
-        />
-        <AppNavigator />
-        <Toast />
-      </NavigationContainer>
+      <DrawerProvider>
+        <NavigationContainer linking={linking}>
+          <StatusBar 
+            barStyle="dark-content" 
+            backgroundColor="#ffffff" 
+            translucent={Platform.OS === 'android'}
+          />
+          <AppNavigator />
+          <Toast />
+        </NavigationContainer>
+      </DrawerProvider>
     </AuthProvider>
   );
 };

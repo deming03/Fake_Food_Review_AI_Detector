@@ -1,16 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
-  Animated,
-  Alert,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList, AnalysisResult } from '../types';
-import { restaurantApi } from '../services/api';
+import * as Animatable from 'react-native-animatable';
+import { RootStackParamList } from '../types';
+import { parseGoogleMapsUrl } from '../utils/helpers';
+import apiClient from '../services/api';
+import { 
+  EnhancedProgressBar,
+  AnalysisResultSkeleton,
+  LoadingDots,
+  SpinningLoader
+} from '../components/LoadingComponents';
+import {
+  CredibilityScoreChart,
+  SentimentChart,
+  ReviewDistributionChart,
+  StatsDashboard,
+  TrendChart
+} from '../components/DataVisualization';
+import { 
+  ModernCard, 
+  StatusBadge, 
+  Colors,
+  showToast
+} from '../components/EnhancedUI';
+
+const { width } = Dimensions.get('window');
 
 type AnalysisScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Analysis'>;
 type AnalysisScreenRouteProp = RouteProp<RootStackParamList, 'Analysis'>;
@@ -18,248 +40,326 @@ type AnalysisScreenRouteProp = RouteProp<RootStackParamList, 'Analysis'>;
 const AnalysisScreen: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState('');
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  
   const navigation = useNavigation<AnalysisScreenNavigationProp>();
   const route = useRoute<AnalysisScreenRouteProp>();
+  
   const { restaurantUrl } = route.params;
-
-  const progressAnim = new Animated.Value(0);
-  const pulseAnim = new Animated.Value(1);
-
-  const steps = [
-    'Parsing restaurant URL...',
-    'Fetching restaurant reviews...',
-    'Running AI authenticity analysis...',
-    'Detecting suspicious patterns...',
-    'Calculating credibility score...',
-    'Generating detailed report...',
-  ];
 
   useEffect(() => {
     startAnalysis();
-    startPulseAnimation();
   }, []);
-
-  const startPulseAnimation = () => {
-    const pulse = () => {
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.2,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ]).start(pulse);
-    };
-    pulse();
-  };
 
   const startAnalysis = async () => {
     try {
-      for (let i = 0; i < steps.length; i++) {
-        setCurrentStep(steps[i]);
-        setProgress((i + 1) / steps.length);
-        
-        // Animate progress bar
-        Animated.timing(progressAnim, {
-          toValue: (i + 1) / steps.length,
-          duration: 500,
-          useNativeDriver: false,
-        }).start();
-
-        // Simulate step duration
-        await new Promise(resolve => setTimeout(resolve, 500));
+      // Parse the restaurant URL
+      const parseResult = parseGoogleMapsUrl(restaurantUrl);
+      if (!parseResult.isValid) {
+        setError('Invalid restaurant URL');
+        return;
       }
 
-      // Call the API to get analysis results
-      const response = await restaurantApi.analyzeRestaurant(restaurantUrl);
+      // Simulate analysis steps with enhanced progress
+      const steps = [
+        { step: 'Parsing restaurant URL...', progress: 10 },
+        { step: 'Fetching restaurant data...', progress: 25 },
+        { step: 'Collecting reviews...', progress: 40 },
+        { step: 'Running AI analysis...', progress: 60 },
+        { step: 'Detecting suspicious patterns...', progress: 80 },
+        { step: 'Generating credibility score...', progress: 95 },
+        { step: 'Analysis complete!', progress: 100 },
+      ];
+
+      for (const { step, progress: stepProgress } of steps) {
+        setCurrentStep(step);
+        setProgress(stepProgress);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+
+      // Get analysis result
+      const response = await apiClient.analyzeRestaurant(restaurantUrl);
       
       if (response.success && response.data) {
-        navigation.replace('Results', { analysisResult: response.data });
+        const analysisData = response.data;
+        setAnalysisResult(analysisData);
+        showToast.success('Analysis completed successfully!');
+        
+        // Navigate to results after a short delay
+        setTimeout(() => {
+          navigation.replace('Results', { 
+            analysisResult: analysisData
+          });
+        }, 2000);
       } else {
         throw new Error(response.error || 'Analysis failed');
       }
-    } catch (error) {
-      Alert.alert(
-        'Analysis Failed',
-        error instanceof Error ? error.message : 'An unexpected error occurred',
-        [
-          {
-            text: 'Try Again',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
+
+    } catch (err: any) {
+      console.error('Analysis error:', err);
+      setError(err.message || 'Analysis failed');
+      showToast.error('Analysis failed. Please try again.');
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Animated.View style={[styles.iconContainer, { transform: [{ scale: pulseAnim }] }]}>
-          <Text style={styles.icon}>🔍</Text>
-        </Animated.View>
+  if (error) {
+    return (
+      <ScrollView style={styles.container}>
+        <ModernCard title="❌ Analysis Error" variant="warning">
+          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.helpText}>Please check your URL and try again.</Text>
+        </ModernCard>
+      </ScrollView>
+    );
+  }
 
-        <Text style={styles.title}>AI Analysis in Progress</Text>
-        <Text style={styles.subtitle}>Analyzing restaurant reviews for authenticity</Text>
+  if (progress === 100 && analysisResult) {
+    return (
+      <ScrollView style={styles.container}>
+        {/* Success State with Preview */}
+        <Animatable.View animation="bounceIn">
+          <ModernCard title="✅ Truth Revealed!" variant="success">
+            <Text style={styles.successText}>
+              The truth about this restaurant has been revealed!
+            </Text>
+            <StatusBadge text="Redirecting to results..." status="info" />
+          </ModernCard>
+        </Animatable.View>
 
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <Animated.View
-              style={[
-                styles.progressFill,
-                {
-                  width: progressAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0%', '100%'],
-                  }),
-                },
-              ]}
-            />
-          </View>
-          <Text style={styles.progressText}>{Math.round(progress * 100)}%</Text>
-        </View>
-
-        <View style={styles.stepContainer}>
-          <Text style={styles.stepText}>{currentStep}</Text>
-        </View>
-
-        <View style={styles.stepsListContainer}>
-          {steps.map((step, index) => (
-            <View key={index} style={styles.stepItem}>
-              <View
-                style={[
-                  styles.stepIndicator,
-                  {
-                    backgroundColor: progress > index / steps.length ? '#4CAF50' : '#E0E0E0',
-                  },
-                ]}
-              >
-                {progress > index / steps.length ? (
-                  <Text style={styles.checkmark}>✓</Text>
-                ) : (
-                  <Text style={styles.stepNumber}>{index + 1}</Text>
-                )}
-              </View>
-              <Text
-                style={[
-                  styles.stepLabel,
-                  {
-                    color: progress > index / steps.length ? '#333' : '#999',
-                    fontWeight: progress > index / steps.length ? '600' : 'normal',
-                  },
-                ]}
-              >
-                {step}
+        {/* Preview Results */}
+        <ModernCard title="📊 Truth Score Preview">
+          <View style={styles.previewContainer}>
+            <CredibilityScoreChart score={analysisResult.credibilityScore} size={120} />
+            <View style={styles.previewStats}>
+              <Text style={styles.previewScore}>
+                {analysisResult.credibilityScore}% Authentic
+              </Text>
+              <Text style={styles.previewDetails}>
+                {analysisResult.totalReviewsAnalyzed} reviews analyzed
+              </Text>
+              <Text style={styles.previewDetails}>
+                {analysisResult.fakeReviewsDetected} suspicious reviews found
               </Text>
             </View>
+          </View>
+        </ModernCard>
+
+        {/* Loading Dots */}
+        <View style={styles.loadingContainer}>
+          <LoadingDots size={12} color={Colors.primary} />
+          <Text style={styles.loadingText}>Preparing your truth report...</Text>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+      {/* Analysis Header */}
+      <Animatable.View animation="fadeInDown">
+        <ModernCard title="🕵️ TRUTH BITE Analysis" icon="analytics">
+          <Text style={styles.analysisUrl}>{restaurantUrl}</Text>
+          <StatusBadge 
+            text={progress < 100 ? "Analyzing..." : "Complete"} 
+            status={progress < 100 ? "info" : "success"} 
+          />
+        </ModernCard>
+      </Animatable.View>
+
+      {/* Progress Section */}
+      <ModernCard>
+        <EnhancedProgressBar 
+          progress={progress} 
+          label={currentStep}
+        />
+        
+        {/* Spinning Loader */}
+        <View style={styles.loaderContainer}>
+          <SpinningLoader size={50} color={Colors.primary} />
+        </View>
+      </ModernCard>
+
+      {/* Analysis Steps */}
+      <ModernCard title="🔍 Truth Detection Process">
+        <View style={styles.stepsContainer}>
+          {[
+            { icon: '🔗', text: 'URL Parsing', done: progress > 10 },
+            { icon: '📊', text: 'Data Collection', done: progress > 25 },
+            { icon: '🕵️', text: 'Review Analysis', done: progress > 60 },
+            { icon: '🧠', text: 'AI Detection', done: progress > 80 },
+            { icon: '✅', text: 'Results Generation', done: progress >= 100 },
+          ].map((step, index) => (
+            <Animatable.View
+              key={index}
+              animation={step.done ? "bounceIn" : "fadeIn"}
+              delay={index * 200}
+              style={[
+                styles.stepItem,
+                step.done && styles.stepCompleted
+              ]}
+            >
+              <Text style={styles.stepIcon}>{step.icon}</Text>
+              <Text style={[
+                styles.stepText,
+                step.done && styles.stepTextCompleted
+              ]}>
+                {step.text}
+              </Text>
+              {step.done && (
+                <Text style={styles.checkmark}>✓</Text>
+              )}
+            </Animatable.View>
           ))}
         </View>
+      </ModernCard>
 
-        <ActivityIndicator size="large" color="#FF6B35" style={styles.loader} />
+      {/* Skeleton Loading for Results */}
+      {progress > 50 && (
+        <Animatable.View animation="fadeInUp">
+          <ModernCard title="📋 Preparing Truth Report...">
+            <AnalysisResultSkeleton />
+          </ModernCard>
+        </Animatable.View>
+      )}
+
+      {/* Fun Facts During Loading */}
+      <ModernCard title="💡 Did You Know?" variant="highlighted">
+        <Text style={styles.funFact}>
+          🕵️ TRUTH BITE's AI engine analyzes over 50 different patterns in review text, including writing style, sentiment consistency, and timing patterns to uncover deceptive content with 89% accuracy!
+        </Text>
+      </ModernCard>
+
+      {/* Loading Animation */}
+      <View style={styles.bottomLoader}>
+        <LoadingDots size={10} color={Colors.secondary} />
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.background,
   },
-  content: {
-    flex: 1,
+
+  // Analysis Header
+  analysisUrl: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginBottom: 12,
+    fontFamily: 'monospace',
+  },
+
+  // Progress Section
+  loaderContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    marginVertical: 20,
   },
-  iconContainer: {
-    marginBottom: 30,
-  },
-  icon: {
-    fontSize: 80,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 40,
-    textAlign: 'center',
-  },
-  progressContainer: {
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  progressBar: {
-    width: '100%',
-    height: 8,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: 10,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#FF6B35',
-    borderRadius: 4,
-  },
-  progressText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  stepContainer: {
-    marginBottom: 30,
-  },
-  stepText: {
-    fontSize: 16,
-    color: '#FF6B35',
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  stepsListContainer: {
-    width: '100%',
-    marginBottom: 30,
+
+  // Steps
+  stepsContainer: {
+    marginTop: 12,
   },
   stepItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.background,
+    borderRadius: 8,
+    marginBottom: 8,
   },
-  stepIndicator: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+  stepCompleted: {
+    backgroundColor: `${Colors.success}15`,
+  },
+  stepIcon: {
+    fontSize: 20,
     marginRight: 12,
   },
-  checkmark: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  stepNumber: {
-    color: '#666',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  stepLabel: {
-    fontSize: 14,
+  stepText: {
     flex: 1,
+    fontSize: 16,
+    color: Colors.textSecondary,
   },
-  loader: {
-    marginTop: 20,
+  stepTextCompleted: {
+    color: Colors.text,
+    fontWeight: '600',
+  },
+  checkmark: {
+    fontSize: 18,
+    color: Colors.success,
+    fontWeight: 'bold',
+  },
+
+  // Success State
+  successText: {
+    fontSize: 16,
+    color: Colors.success,
+    textAlign: 'center',
+    marginBottom: 16,
+    fontWeight: '600',
+  },
+
+  // Preview
+  previewContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  previewStats: {
+    flex: 1,
+    marginLeft: 20,
+  },
+  previewScore: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    marginBottom: 8,
+  },
+  previewDetails: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginBottom: 4,
+  },
+
+  // Loading
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 12,
+  },
+
+  // Fun Facts
+  funFact: {
+    fontSize: 14,
+    color: Colors.text,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+
+  // Error
+  errorText: {
+    fontSize: 16,
+    color: Colors.error,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  helpText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+
+  // Bottom
+  bottomLoader: {
+    alignItems: 'center',
+    paddingVertical: 30,
   },
 });
 
